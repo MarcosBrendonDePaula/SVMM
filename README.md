@@ -13,7 +13,7 @@ O **SVMG (Stardew Valley Mod Manager)** nasceu da necessidade de jogadores de St
 
 ## 🚀 Motivação
 
-Jogar Stardew Valley com mods pode ser uma experiência incrível, mas gerenciar esses mods pode ser uma dor de cabeça. Atualizar, instalar e sincronizar mods com amigos é um processo que consome muito tempo. Além disso, há uma grande oportunidade de se destacar na comunidade de modding de Stardew Valley. Não apenas pelo reconhecimento, mas para realmente fazer a diferença e melhorar a experiência do jogador.
+Jogar Stardew Valley com mods pode ser uma experiência incrível, mas gerenciar esses mods pode ser uma dor de cabeça. Atualizar, instalar e sincronizar mods com amigos é um processo que consome muito tempo. Queremos melhorar a experiência do jogador, tornando todo o processo mais fácil e eficiente.
 
 ## 👥 Contribuidores
 
