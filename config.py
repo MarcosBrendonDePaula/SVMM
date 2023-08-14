@@ -1,13 +1,30 @@
 import configparser
+import os
 
 class Config:
+    """Classe para gerenciar configurações do jogo usando um padrão Singleton."""
+    _instance = None
+
+    def __new__(cls):
+        """Cria uma instância única da classe Config, garantindo que as configurações sejam carregadas apenas uma vez."""
+        if cls._instance is None:
+            cls._instance = super(Config, cls).__new__(cls)
+            cls._instance.config = configparser.ConfigParser()
+            cls._instance.load()
+        return cls._instance
 
     def __init__(self):
+        """Inicializa a classe Config com as configurações padrão."""
         self.config = configparser.ConfigParser()
 
+        self.config['CONSOLE'] = {
+            'loglevel': 'INFO',
+        }
+
         # Valores padrão
-        self.config['DEFAULT'] = {
-            'LogLevel': 'INFO'
+        self.config['GAME'] = {
+            'gamepath': '',
+            'modsfolder': 'Mods'
         }
 
     def set(self, section, key, value):
@@ -26,5 +43,8 @@ class Config:
             self.config.write(configfile)
 
     def load(self):
-        """Carrega o arquivo de configuração."""
-        self.config.read('settings.ini')
+        """Carrega o arquivo de configuração ou cria se não existir."""
+        if os.path.exists('settings.ini'):
+            self.config.read('settings.ini')
+        else:
+            self.save()  # Cria o arquivo com as configurações padrão
