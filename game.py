@@ -24,6 +24,7 @@ class Game:
             command = f'"{exe_path}" --mods-path {mods_folder}'
             if os.name == 'posix':  # Linux
                 command = shlex.quote(command)
+            print(command)
             os.system(command)
         else:
             print("Game path or mods folder not set. Please configure them.")
