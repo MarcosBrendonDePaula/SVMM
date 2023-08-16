@@ -6,12 +6,17 @@ import os
 if __name__ == '__main__':
     conf = Config()
     conf.load()
-
+    #cria uma modpack
     modpack = Modpack("henri")
-    modpack.save()
 
-    modpack = Modpack("marcos")
-    modpack.save()
+    #carrega uma modpack ja criada
+    modpack = Modpack.load_from_json('marcos')
+
+    #lista as modpacks validas
+    print(Modpack.list_modpacks())
+
+    #instancia todas as modpacks validas
+    print(Modpack.get_all_modpacks())
 
     game = Game()
 
