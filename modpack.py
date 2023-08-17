@@ -53,6 +53,112 @@ class Modpack:
         with open(filename, 'w') as json_file:
             json.dump(modpack_data, json_file, indent=4)
 
+    def enable_mod(self, mod_name):
+        """
+        Habilita um mod, movendo-o da pasta 'mods_disabled' para 'mods_enabled'.
+
+        Args:
+            mod_name (str): Nome do mod a ser habilitado.
+        """
+        source_path = os.path.join(self.mods_disabled_path, mod_name)
+        destination_path = os.path.join(self.mods_enabled_path, mod_name)
+        
+        if os.path.exists(source_path):
+            os.rename(source_path, destination_path)
+            self.save()
+
+    def enable_all_mods(self):
+        """
+        Habilita todos os mods desabilitados, movendo-os para a pasta 'mods_enabled'.
+        """
+        for mod in self.list_disabled_mods():
+            self.enable_mod(mod)
+
+    def disable_all_mods(self):
+        """
+        Desabilita todos os mods habilitados, movendo-os para a pasta 'mods_disabled'.
+        """
+        for mod in self.list_enabled_mods():
+            self.disable_mod(mod)
+
+    def disable_mod(self, mod_name):
+        """
+        Desabilita um mod, movendo-o da pasta 'mods_enabled' para 'mods_disabled'.
+
+        Args:
+            mod_name (str): Nome do mod a ser desabilitado.
+        """
+        source_path = os.path.join(self.mods_enabled_path, mod_name)
+        destination_path = os.path.join(self.mods_disabled_path, mod_name)
+        
+        if os.path.exists(source_path):
+            os.rename(source_path, destination_path)
+            self.save()
+
+    def enable_mods(self, mods_to_enable):
+        """
+        Habilita uma lista de mods, movendo-os da pasta 'mods_disabled' para 'mods_enabled'.
+
+        Args:
+            mods_to_enable (list[str]): Lista de nomes de mods a serem habilitados.
+        """
+        for mod in mods_to_enable:
+            self.enable_mod(mod)
+
+    def list_enabled_mods(self):
+        """
+        Lista os nomes dos mods habilitados na modpack.
+
+        Returns:
+            list[str]: Uma lista de nomes de mods habilitados.
+        """
+        enabled_mods = []
+        if os.path.exists(self.mods_enabled_path):
+            enabled_mods = os.listdir(self.mods_enabled_path)
+        return enabled_mods
+
+    def list_disabled_mods(self):
+        """
+        Lista os nomes dos mods desabilitados na modpack.
+
+        Returns:
+            list[str]: Uma lista de nomes de mods desabilitados.
+        """
+        disabled_mods = []
+        if os.path.exists(self.mods_disabled_path):
+            disabled_mods = os.listdir(self.mods_disabled_path)
+        return disabled_mods
+    
+    def list_all_mods(self):
+        """
+        Lista os nomes de todos os mods (habilitados e desabilitados) na modpack.
+
+        Returns:
+            dict: Um dicionário com duas chaves, 'enabled' e 'disabled', contendo listas de nomes de mods.
+        """
+        all_mods = {
+            'enabled': [],
+            'disabled': []
+        }
+        
+        if os.path.exists(self.mods_enabled_path):
+            all_mods['enabled'] = os.listdir(self.mods_enabled_path)
+        
+        if os.path.exists(self.mods_disabled_path):
+            all_mods['disabled'] = os.listdir(self.mods_disabled_path)
+        
+        return all_mods
+
+    def disable_mods(self, mods_to_disable):
+        """
+        Desabilita uma lista de mods, movendo-os da pasta 'mods_enabled' para 'mods_disabled'.
+
+        Args:
+            mods_to_disable (list[str]): Lista de nomes de mods a serem desabilitados.
+        """
+        for mod in mods_to_disable:
+            self.disable_mod(mod)
+
     @classmethod
     def load_from_json(cls, name, base_directory=""):
         """
