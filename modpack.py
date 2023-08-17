@@ -2,6 +2,8 @@ import json
 import os
 import base64
 
+from mod import Mod
+
 class Modpack:
     """Classe para representar e gerenciar modpacks do jogo."""
 
@@ -158,6 +160,28 @@ class Modpack:
         """
         for mod in mods_to_disable:
             self.disable_mod(mod)
+
+    def get_enabled_mods(self):
+        """
+        Retorna uma lista de objetos da classe Mod para os mods habilitados.
+        """
+        enabled_mods = []
+        for mod_name in self.list_enabled_mods():
+            mod_folder_path = os.path.join(self.mods_enabled_path, mod_name)
+            mod = Mod(mod_folder_path, self.mods_enabled_path)
+            enabled_mods.append(mod)
+        return enabled_mods
+
+    def get_disabled_mods(self):
+        """
+        Retorna uma lista de objetos da classe Mod para os mods desabilitados.
+        """
+        disabled_mods = []
+        for mod_name in self.list_disabled_mods():
+            mod_folder_path = os.path.join(self.mods_disabled_path, mod_name)
+            mod = Mod(mod_folder_path, self.mods_disabled_path)
+            disabled_mods.append(mod)
+        return disabled_mods
 
     @classmethod
     def load_from_json(cls, name, base_directory=""):
