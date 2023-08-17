@@ -20,9 +20,10 @@ if __name__ == '__main__':
         print("Mod Author:", mod.author)
 
         if mod.dependencies:
-            dependencies_list = [dependency["UniqueID"] for dependency in mod.dependencies]
-            dependencies_str = ", ".join(dependencies_list)
-            print("Mod Dependencies:", dependencies_str)
+            # dependencies_list = [dependency["UniqueID"] for dependency in mod.dependencies]
+            # dependencies_str = ", ".join(dependencies_list)
+            # print("Mod Dependencies:", dependencies_str)
+            print(mod.dependencies)      
         else:
             print("Mod Dependencies: None")
         print("=" * 30)  # Linha de separação entre os mods

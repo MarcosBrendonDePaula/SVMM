@@ -82,23 +82,11 @@ class Mod:
             self.update_keys = manifest_data.get("UpdateKeys", [])
             self.dependencies = manifest_data.get("Dependencies", [])
             
-                
-            
             # Cria instâncias da classe Mod para cada dependência
             for dependency in self.dependencies:
                 if "UniqueId" in dependency:
                     dependency["UniqueID"] = dependency["UniqueId"]
                     del dependency["UniqueId"]
-                if "UniqueID" in dependency:
-                    dependency_unique_id = dependency["UniqueID"]
-                    dependency_folder_path = os.path.join(self.base_mods_directory, dependency_unique_id)
-                    try:
-                        dependency_mod = Mod(dependency_folder_path, self.base_mods_directory)
-                        dependency["Mod"] = dependency_mod
-                        dependency["Loaded"] = True
-                    except FileNotFoundError:
-                        dependency["Loaded"] = False
-                    dependency["Mod"] = dependency_mod
 
     def to_dict(self):
         """
