@@ -12,7 +12,7 @@ if __name__ == '__main__':
     #carrega uma modpack ja criada
     modpack = Modpack.load_from_json('marcos')
     # modpack.disable_mod('ExpandedPreconditionsUtility')
-    enabled_mods = modpack.get_enabled_mods()
+    enabled_mods = modpack.get_disabled_mods()
     print("Enabled Mods:")
     for index, mod in enumerate(enabled_mods, start=1):
         print(f"Mod {index}:")
@@ -20,7 +20,6 @@ if __name__ == '__main__':
         print("Mod Author:", mod.author)
 
         if mod.dependencies:
-            print(mod.dependencies)
             dependencies_list = [dependency["UniqueID"] for dependency in mod.dependencies]
             dependencies_str = ", ".join(dependencies_list)
             print("Mod Dependencies:", dependencies_str)

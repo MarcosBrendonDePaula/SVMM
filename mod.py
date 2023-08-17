@@ -92,7 +92,12 @@ class Mod:
                 if "UniqueID" in dependency:
                     dependency_unique_id = dependency["UniqueID"]
                     dependency_folder_path = os.path.join(self.base_mods_directory, dependency_unique_id)
-                    dependency_mod = Mod(dependency_folder_path, self.base_mods_directory)
+                    try:
+                        dependency_mod = Mod(dependency_folder_path, self.base_mods_directory)
+                        dependency["Mod"] = dependency_mod
+                        dependency["Loaded"] = True
+                    except FileNotFoundError:
+                        dependency["Loaded"] = False
                     dependency["Mod"] = dependency_mod
 
     def to_dict(self):
