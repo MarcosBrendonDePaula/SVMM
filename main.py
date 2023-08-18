@@ -1,32 +1,43 @@
+from PyQt6.QtWidgets import QApplication
+import sys
+
 from config import Config
 from game import Game
 from modpack import Modpack
 import os
 
+from views.menu import MenuView
+
 if __name__ == '__main__':
     conf = Config()
     conf.load()
-    #cria uma modpack
-    modpack = Modpack("henri")
-
+    
+    #cria uma modpack padrão
+    modpack = Modpack("default")
+    
+    app = QApplication(sys.argv)
+    ex = MenuView()
+    sys.exit(app.exec())
+    
     #carrega uma modpack ja criada
-    modpack = Modpack.load_from_json('marcos')
-    # modpack.disable_mod('ExpandedPreconditionsUtility')
-    enabled_mods = modpack.get_disabled_mods()
-    print("Enabled Mods:")
-    for index, mod in enumerate(enabled_mods, start=1):
-        print(f"Mod {index}:")
-        print("Mod Name:", mod.name)
-        print("Mod Author:", mod.author)
+    # modpack = Modpack.load_from_json('marcos')
+    # # modpack.disable_mod('ExpandedPreconditionsUtility')
+    # enabled_mods = modpack.get_disabled_mods()
+    # print("Enabled Mods:")
+    # for index, mod in enumerate(enabled_mods, start=1):
+    #     print(f"Mod {index}:")
+    #     print("Mod Name:", mod.name)
+    #     print("Mod Author:", mod.author)
+    #     print("Mod version:", mod.version)
 
-        if mod.dependencies:
-            # dependencies_list = [dependency["UniqueID"] for dependency in mod.dependencies]
-            # dependencies_str = ", ".join(dependencies_list)
-            # print("Mod Dependencies:", dependencies_str)
-            print(mod.dependencies)      
-        else:
-            print("Mod Dependencies: None")
-        print("=" * 30)  # Linha de separação entre os mods
+    #     if mod.dependencies:
+    #         # dependencies_list = [dependency["UniqueID"] for dependency in mod.dependencies]
+    #         # dependencies_str = ", ".join(dependencies_list)
+    #         # print("Mod Dependencies:", dependencies_str)
+    #         print(mod.dependencies)      
+    #     else:
+    #         print("Mod Dependencies: None")
+    #     print("=" * 30)  # Linha de separação entre os mods
 
 
     # disabled_mods = modpack.get_disabled_mods()
@@ -41,9 +52,11 @@ if __name__ == '__main__':
     #instancia todas as modpacks validas
     # print(Modpack.get_all_modpacks())
 
+    
+
+    # conf = Config()
+    # conf.load()
     # game = Game()
-
-
     # game.set_mods_folder(os.path.join(os.getcwd(), modpack.mods_folder()))
     # game.play()
 
@@ -70,5 +83,4 @@ if __name__ == '__main__':
     # # Liste novamente os mods habilitados e desabilitados
     # print("Mods habilitados após desabilitar:", modpack.list_enabled_mods())
     # print("Mods desabilitados após desabilitar:", modpack.list_disabled_mods())
-
     pass
