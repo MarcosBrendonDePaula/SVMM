@@ -13,7 +13,7 @@ if __name__ == '__main__':
     conf.load()
     
     #cria uma modpack padrão
-    modpack = Modpack("default")
+    modpack = Modpack("default")                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
     
     app = QApplication(sys.argv)
     ex = MenuView()

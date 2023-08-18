@@ -1,6 +1,6 @@
 import sys
 import os
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QListWidget, QListWidgetItem, QPushButton
+from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QListWidget, QListWidgetItem, QPushButton, QLineEdit, QVBoxLayout, QDialog
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtCore import Qt
 import base64
@@ -22,8 +22,8 @@ class MenuView(QWidget):
 
     def ListAllModpacks(self):
         modpacks = Modpack.get_all_modpacks()
-
         list_widget = self.findChild(QListWidget, "list_widget")  # Encontre o QListWidget pelo nome
+        list_widget.clear()
         list_widget.itemSelectionChanged.connect(self.on_item_selected)
         
         self.info_layout = QGridLayout()  # Inicialize o layout de informações
@@ -34,7 +34,7 @@ class MenuView(QWidget):
             item.setText(modpack.name)  # Define o texto do item como o nome do modpack
             
             icon_pixmap = base64_to_img(modpack.image)  # Converte a base64 em QPixmap
-            icon_pixmap_resized = icon_pixmap.scaledToHeight(128)  # Redimensione para 128 pixels de altura (ajuste conforme necessário)
+            icon_pixmap_resized = icon_pixmap.scaledToHeight(32)  # Redimensione para 128 pixels de altura (ajuste conforme necessário)
             item.setIcon(QIcon(icon_pixmap_resized))  # Define o ícone do item
             list_widget.addItem(item)  # Adiciona o item à lista
 
@@ -105,6 +105,33 @@ class MenuView(QWidget):
     def remove_modpack(self):
         print("Botão REMOVER pressionado")
     
+    def create_modpack(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle('Criar Modpack')
+        
+        layout = QVBoxLayout()
+        
+        label = QLabel('Digite o nome da Modpack:')
+        layout.addWidget(label)
+        
+        name_input = QLineEdit()
+        layout.addWidget(name_input)
+        
+        confirm_button = QPushButton('Criar')
+        confirm_button.clicked.connect(lambda: self.confirm_create_modpack(name_input.text(), dialog))
+        layout.addWidget(confirm_button)
+
+        dialog.setLayout(layout)
+        dialog.exec()
+    
+    def confirm_create_modpack(self, modpack_name, dialog):
+        if modpack_name:
+            modpack = Modpack(modpack_name)
+            modpack.save()
+            # Atualizar a lista de modpacks
+            self.ListAllModpacks()
+            dialog.close()
+    
     def init_ui(self):
         layout = QGridLayout()
 
@@ -113,6 +140,13 @@ class MenuView(QWidget):
         list_widget.setObjectName("list_widget")  # Defina o nome do objeto
         layout.addWidget(list_widget, 0, 0, 5, 2)  # (linha, coluna, rowspan, colspan)
 
+    
+        
+        # Adicionar botão de criar modpack
+        create_button = QPushButton('Criar Modpack')
+        create_button.clicked.connect(self.create_modpack)
+        layout.addWidget(create_button, 5, 0, 1, 2, alignment=Qt.AlignmentFlag.AlignCenter)
+    
         self.setLayout(layout)
         self.ListAllModpacks()
         self.setGeometry(100, 100, 800, 600)
