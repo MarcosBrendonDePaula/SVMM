@@ -171,7 +171,7 @@ class Modpack:
             mod = Mod(mod_folder_path, self.mods_enabled_path)
             enabled_mods.append(mod)
         return enabled_mods
-
+    
     def get_disabled_mods(self):
         """
         Retorna uma lista de objetos da classe Mod para os mods desabilitados.
@@ -183,6 +183,29 @@ class Modpack:
             disabled_mods.append(mod)
         return disabled_mods
 
+    def rename_modpack(self, new_name):
+        """
+        Renomeia a modpack e atualiza a pasta correspondente.
+
+        Args:
+            new_name (str): Novo nome da modpack.
+        """
+        # Verifique se o novo nome é diferente do atual
+        if new_name != self.name:
+            # Determine o diretório base das modpacks
+            base_directory = os.path.dirname(self.folder_path)
+            print(base_directory)
+            # Calcule o novo caminho para a pasta da modpack
+            new_folder_path = os.path.join(base_directory, new_name)
+            print(new_folder_path )
+            # Renomeie a pasta da modpack
+            os.rename(self.folder_path, new_folder_path)
+            self.folder_path = new_folder_path
+
+            # Atualize o nome da modpack
+            self.name = new_name
+            self.save()
+    
     @classmethod
     def load_from_json(cls, name, base_directory=""):
         """

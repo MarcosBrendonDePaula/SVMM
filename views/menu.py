@@ -8,6 +8,7 @@ import base64
 from config import Config
 from game import Game
 from modpack import Modpack
+from views.modpackConfigWindow import ModpackConfigWindow
 
 def base64_to_img(_base64) -> QPixmap:
     icon_pixmap = QPixmap()
@@ -100,7 +101,16 @@ class MenuView(QWidget):
         game.play()
         
     def edit_modpack(self):
-        print("Botao EDITAR pressionado")
+        list_widget = self.findChild(QListWidget, "list_widget")  # Encontre o QListWidget pelo nome
+        selected_items = list_widget.selectedItems()  # Obtenha os itens selecionados
+        
+        if selected_items:
+            selected_item = selected_items[0]  # Use o primeiro item selecionado, se houver
+            modpack = selected_item.data(Qt.ItemDataRole.UserRole)  # Obtém o objeto Modpack associado ao item
+            
+            # Abra a janela de configuração passando o objeto Modpack
+            config_window = ModpackConfigWindow(modpack)
+            config_window.exec()
         
     def remove_modpack(self):
         print("Botão REMOVER pressionado")
