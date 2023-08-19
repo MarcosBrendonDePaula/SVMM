@@ -1,8 +1,8 @@
 import sys
 import os
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QListWidget, QListWidgetItem, QPushButton, QLineEdit, QVBoxLayout, QDialog
+from PyQt6.QtWidgets import QApplication, QMenu ,QSystemTrayIcon, QWidget, QLabel, QGridLayout, QListWidget, QListWidgetItem, QPushButton, QLineEdit, QVBoxLayout, QDialog
 from PyQt6.QtGui import QPixmap, QIcon
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
 import base64
 
 from config import Config
@@ -18,11 +18,39 @@ def base64_to_img(_base64) -> QPixmap:
         pass
     return icon_pixmap
 
+class GameThread(QThread):
+    finished = pyqtSignal()
+    def __init__(self, game):
+        super().__init__()
+        self.game = game
+
+    def run(self):
+        self.game.play()
+        self.finished.emit()
 
 class MenuView(QWidget):
     def __init__(self):
         super().__init__()
         self.init_ui()
+
+    def create_system_tray_icon(self, modpack):
+        self.tray_icon = QSystemTrayIcon(self)
+        # Carregue o ícone da modpack e defina-o como o ícone da bandeja do sistema
+        modpack_icon = base64_to_img(modpack.image)
+        modpack_icon_resized = modpack_icon.scaledToHeight(16)  # Redimensione conforme necessário
+        self.tray_icon.setIcon(QIcon(modpack_icon_resized))
+        self.tray_icon.setToolTip('Seu aplicativo de modpacks')  # Substitua pela dica desejada
+        self.tray_icon.activated.connect(self.toggle_window)
+
+        # Crie um menu para a bandeja do sistema
+        tray_menu = QMenu()
+        open_action = tray_menu.addAction('Abrir')
+        open_action.triggered.connect(self.show_window)
+        exit_action = tray_menu.addAction('Sair')
+        exit_action.triggered.connect(self.close_app)
+
+        self.tray_icon.setContextMenu(tray_menu)
+        self.tray_icon.show()
 
     def ListAllModpacks(self):
         modpacks = Modpack.get_all_modpacks()
@@ -72,18 +100,18 @@ class MenuView(QWidget):
             self.info_layout.addWidget(name_label, 1, 0, alignment=Qt.AlignmentFlag.AlignCenter)
             
             # Adicione os botões
-            play_button = QPushButton('JOGAR')
+            self.play_button = QPushButton('JOGAR')
             edit_button = QPushButton('EDITAR')
             remove_button = QPushButton('REMOVER')
             
             # Associe funções aos botões, se necessário
-            play_button.clicked.connect(self.play_modpack)
+            self.play_button.clicked.connect(self.play_modpack)
             edit_button.clicked.connect(self.edit_modpack)
             remove_button.clicked.connect(self.remove_modpack)
             
             # Adicione os botões ao layout
             button_layout = QGridLayout()
-            button_layout.addWidget(play_button, 0, 0)
+            button_layout.addWidget(self.play_button, 0, 0)
             button_layout.addWidget(edit_button, 0, 1)
             button_layout.addWidget(remove_button, 0, 2)
             
@@ -94,14 +122,32 @@ class MenuView(QWidget):
             self.layout().addLayout(self.info_layout, 0, 2, 5, 2)
             self.layout().update()
     
-    # Funções dos botões
     def play_modpack(self):
-        list_widget = self.findChild(QListWidget, "list_widget")  # Encontre o QListWidget pelo nome
-        selected_items = list_widget.selectedItems()  # Obtenha os itens selecionados
-        modpack = selected_items[0].data(Qt.ItemDataRole.UserRole)
-        game = Game()
-        game.set_mods_folder(os.path.join(os.getcwd(), modpack.mods_folder()))
-        game.play()
+        list_widget = self.findChild(QListWidget, "list_widget")
+        selected_items = list_widget.selectedItems()
+
+        if selected_items:
+            selected_item = selected_items[0]
+            modpack = selected_item.data(Qt.ItemDataRole.UserRole)
+            game = Game()
+            game.set_mods_folder(os.path.join(os.getcwd(), modpack.mods_folder()))
+            self.create_system_tray_icon(modpack)
+
+            self.play_button.setEnabled(False)  # Desabilitar o botão "JOGAR"
+            self.play_button.setText('RODANDO')  # Alterar o texto do botão
+
+            # Inicie o jogo em uma thread separada
+            self.game_thread = GameThread(game)
+            self.game_thread.finished.connect(self.on_game_finished)
+            self.game_thread.start()
+            self.toggle_window(QSystemTrayIcon.ActivationReason.MiddleClick)
+
+    def on_game_finished(self):
+        self.tray_icon.hide()
+        self.show()
+
+        self.play_button.setEnabled(True)  # Habilitar o botão "JOGAR" novamente
+        self.play_button.setText('JOGAR')  # Restaurar o texto do botão
         
     def edit_modpack(self):
         list_widget = self.findChild(QListWidget, "list_widget")  # Encontre o QListWidget pelo nome
@@ -114,7 +160,21 @@ class MenuView(QWidget):
             # Abra a janela de configuração passando o objeto Modpack
             config_window = ModpackConfigWindow(modpack)
             config_window.exec()
-        
+
+    def toggle_window(self, reason):
+        if reason == QSystemTrayIcon.ActivationReason.Trigger or reason == QSystemTrayIcon.ActivationReason.MiddleClick:
+            if self.isVisible():
+                self.hide()
+            else:
+                self.show()
+
+    def show_window(self):
+        self.show()
+
+    def close_app(self):
+        self.tray_icon.hide()
+        self.close()
+    
     def remove_modpack(self):
         print("Botão REMOVER pressionado")
     
