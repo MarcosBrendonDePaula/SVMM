@@ -7,6 +7,11 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QPixmap, QImage, QImageReader
 from PyQt6.QtCore import Qt
 
+def base64_to_img(_base64) -> QPixmap:
+    icon_pixmap = QPixmap()
+    icon_pixmap.loadFromData(base64.b64decode(_base64))  # Carregar o pixmap a partir dos dados
+    return icon_pixmap
+
 class ModpackConfigWindow(QDialog):
     def __init__(self, modpack):
         super().__init__()
@@ -35,6 +40,9 @@ class ModpackConfigWindow(QDialog):
 
         self.image_preview = QLabel()
         self.image_preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        pixmap = base64_to_img(self.modpack.image)
+        self.image_preview.setPixmap(pixmap)
+        
         modpack_edit_layout.addWidget(self.image_preview)
 
         select_image_button = QPushButton('Selecionar Imagem')

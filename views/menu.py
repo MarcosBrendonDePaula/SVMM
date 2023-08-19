@@ -12,7 +12,10 @@ from views.modpackConfigWindow import ModpackConfigWindow
 
 def base64_to_img(_base64) -> QPixmap:
     icon_pixmap = QPixmap()
-    icon_pixmap.loadFromData(base64.b64decode(_base64))  # Carregar o pixmap a partir dos dados
+    try:
+        icon_pixmap.loadFromData(base64.b64decode(_base64))  # Carregar o pixmap a partir dos dados
+    except:
+        pass
     return icon_pixmap
 
 
