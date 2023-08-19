@@ -1,6 +1,12 @@
 import json
 import os
 import base64
+import shutil
+
+import tempfile
+import re
+import zipfile
+from pyunpack import Archive
 
 from mod import Mod
 
@@ -205,6 +211,71 @@ class Modpack:
             # Atualize o nome da modpack
             self.name = new_name
             self.save()
+    
+    #auto instalador de mods zip e rar --------------------------
+    def install_mod(self, file):
+        """
+        Instala um mod a partir de um arquivo zip ou rar.
+
+        Args:
+            file (str): Caminho para o arquivo zip ou rar contendo o mod.
+        """
+        temp_dir = tempfile.mkdtemp()
+        os.system(f'rmdir /s /q "{temp_dir}"')
+        os.makedirs(temp_dir, exist_ok=True)
+        is_zip = file.lower().endswith('.zip')
+        is_rar = file.lower().endswith('.rar')
+        if is_zip or is_rar:
+            Archive(file).extractall(temp_dir)
+        else:
+            print("Formato de arquivo não suportado")
+            return
+        self._fix_folder_names(temp_dir)
+        mods = self.find_installed_mods(temp_dir)
+        # Mover os mods instalados para a pasta "mods_enabled"
+        destination_folder = self.mods_enabled_path
+        for mod_path in mods:
+            mod_name = os.path.basename(mod_path)
+            mod_destination = os.path.join(destination_folder, mod_name)
+            shutil.move(mod_path, mod_destination)
+        os.system(f'rmdir /s /q "{temp_dir}"')
+
+    def _fix_folder_names(self, source_folder):
+
+        """
+        Corrige os nomes de pastas inválidos.
+
+        Args:
+            source_folder (str): Caminho para a pasta com os nomes inválidos.
+        """
+        for root, dirs, files in os.walk(source_folder):
+            for dir_name in dirs:
+                valid_folder_name = re.sub(r'[<>:"/\\|?*]', '_', dir_name)
+                valid_folder_name = valid_folder_name.replace(' ', '_')
+                source_dir = os.path.join(root, dir_name)
+                destination_dir = os.path.join(root, valid_folder_name)  # Caminho completo sem mover
+                os.rename(source_dir, destination_dir)
+                self._fix_folder_names(destination_dir)
+
+    def find_installed_mods(self, folder):
+        """
+        Localiza os mods instalados em uma pasta.
+
+        Args:
+            folder (str): Caminho para a pasta onde os mods estão instalados.
+
+        Returns:
+            list[str]: Lista com os caminhos dos mods instalados.
+        """
+        installed_mods = []
+        for root, dirs, files in os.walk(folder):
+            for file_name in files:
+                if file_name == "manifest.json":
+                    mod_path = root
+                    installed_mods.append(mod_path)
+                    break
+        return installed_mods
+    #auto instalador de mods zip e rar --------------------------
     
     @classmethod
     def load_from_json(cls, name, base_directory=""):
