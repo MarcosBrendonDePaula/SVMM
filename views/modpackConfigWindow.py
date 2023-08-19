@@ -2,7 +2,7 @@ import os
 import base64
 from PyQt6.QtWidgets import (
     QDialog, QLabel, QLineEdit, QPushButton, QVBoxLayout, QListWidgetItem,
-    QListWidget, QHBoxLayout, QFileDialog, QGraphicsPixmapItem, QGraphicsScene, QGraphicsView, QGraphicsSceneMouseEvent
+    QListWidget, QHBoxLayout, QFileDialog, QMessageBox
 )
 from PyQt6.QtGui import QPixmap, QImage, QImageReader
 from PyQt6.QtCore import Qt
@@ -40,8 +40,20 @@ class ModpackConfigWindow(QDialog):
 
         self.image_preview = QLabel()
         self.image_preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        pixmap = base64_to_img(self.modpack.image)
-        self.image_preview.setPixmap(pixmap)
+        
+        pixmap = None
+        if self.modpack.image:
+            try:
+                pixmap = base64_to_img(self.modpack.image)
+            except Exception as e:
+                print("Erro ao carregar a imagem:", e)
+
+        if not pixmap == None:
+            # Redimensionar a imagem como antes
+            desired_width = 200
+            desired_height = 200
+            pixmap_resized = pixmap.scaled(desired_width, desired_height, Qt.AspectRatioMode.KeepAspectRatio)
+            self.image_preview.setPixmap(pixmap_resized)
         
         modpack_edit_layout.addWidget(self.image_preview)
 
@@ -68,25 +80,36 @@ class ModpackConfigWindow(QDialog):
         self.setLayout(layout)
 
     def update_mods_list(self):
+        all_mods = sorted(self.modpack.list_all_mods()['enabled'] + self.modpack.list_all_mods()['disabled'])
         self.mods_list_widget.clear()
-        for mod_name in self.modpack.list_all_mods()['enabled'] + self.modpack.list_all_mods()['disabled']:
+        for mod_name in all_mods:
             item = QListWidgetItem(mod_name)
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             item.setCheckState(Qt.CheckState.Checked if mod_name in self.modpack.list_enabled_mods() else Qt.CheckState.Unchecked)
             self.mods_list_widget.addItem(item)
 
     def select_image(self):
-        # options = QFileDialog.Options()
         image_path, _ = QFileDialog.getOpenFileName(self, "Selecionar Imagem", "", "Images (*.png *.jpg *.jpeg);;All Files (*)")
         
         if image_path:
-            with open(image_path, 'rb') as image_file:
-                image_data = image_file.read()
-                base64_image = base64.b64encode(image_data).decode('utf-8')
-                
-                self.image_edit.setText(base64_image)
-                pixmap = QPixmap.fromImage(QImage.fromData(image_data))
-                self.image_preview.setPixmap(pixmap)
+            # Verifique se a imagem é válida usando QImageReader
+            image_reader = QImageReader(image_path)
+            if image_reader.size().isValid():
+                with open(image_path, 'rb') as image_file:
+                    image_data = image_file.read()
+                    base64_image = base64.b64encode(image_data).decode('utf-8')
+                    
+                    self.image_edit.setText(base64_image)
+                    
+                    # Redimensionar a imagem para 200x200
+                    pixmap = QPixmap.fromImage(QImage.fromData(image_data))
+                    desired_width = 200
+                    desired_height = 200
+                    pixmap_resized = pixmap.scaled(desired_width, desired_height, Qt.AspectRatioMode.KeepAspectRatio)
+                    self.image_preview.setPixmap(pixmap_resized)
+            else:
+                # Imagem inválida, exiba uma mensagem de erro
+                QMessageBox.critical(self, "Erro", "A imagem selecionada não é válida.")
 
     def confirm_changes(self):
         # Atualize os mods habilitados/desabilitados com base nas caixas de seleção

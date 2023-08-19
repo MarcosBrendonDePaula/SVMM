@@ -213,8 +213,6 @@ class MenuView(QWidget):
         list_widget.setObjectName("list_widget")  # Defina o nome do objeto
         layout.addWidget(list_widget, 0, 0, 5, 2)  # (linha, coluna, rowspan, colspan)
 
-    
-        
         # Adicionar botão de criar modpack
         create_button = QPushButton('Criar Modpack')
         create_button.clicked.connect(self.create_modpack)
