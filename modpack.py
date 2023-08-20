@@ -237,8 +237,10 @@ class Modpack:
         for mod_path in mods:
             mod_name = os.path.basename(mod_path)
             mod_destination = os.path.join(destination_folder, mod_name)
-            shutil.move(mod_path, mod_destination)
-        os.system(f'rmdir /s /q "{temp_dir}"')
+            if not os.path.exists(mod_destination):
+                shutil.move(mod_path, mod_destination)
+            else:
+                print(f"The mod '{mod_name}' is already installed.")
 
     def _fix_folder_names(self, source_folder):
 
