@@ -147,7 +147,7 @@ class ModpackConfigWindow(QDialog):
         self.update_mods_list()  # Atualiza a lista de mod
         
     def install_mod(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Selecionar Mod", "", "Mod Files (*.zip *.rar);;All Files (*)")
+        file_path, _ = QFileDialog.getOpenFileName(self, "Selecionar Mod", "", "Mod Files (*.zip);;All Files (*)")
         if file_path:
             self.modpack.install_mod(file_path)
             self.update_mods_list()
