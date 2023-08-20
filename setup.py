@@ -3,7 +3,6 @@ from cx_Freeze import setup, Executable
 executables = [
     Executable(
         script="main.py",
-        targetName="main.exe",
         base="Win32GUI",
     )
 ]

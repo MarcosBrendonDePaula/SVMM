@@ -300,7 +300,7 @@ class Modpack:
             list[str]: Lista com os caminhos dos mods instalados.
         """
         installed_mods = []
-        for root, dirs, files in os.walk(folder):
+        for root, dirs, files in os.walk(folder, topdown=False):  # Percorre os subdiretórios de baixo para cima
             for file_name in files:
                 if file_name == "manifest.json":
                     mod_path = root
