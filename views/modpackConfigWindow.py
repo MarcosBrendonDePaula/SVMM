@@ -75,6 +75,10 @@ class ModpackConfigWindow(QDialog):
         enable_all_button.clicked.connect(self.disable_all_mods)
         modpack_edit_layout.addWidget(enable_all_button)
         
+        install_mod_button = QPushButton('Instalar Mod')
+        install_mod_button.clicked.connect(self.install_mod)
+        modpack_edit_layout.addWidget(install_mod_button)
+        
         layout.addLayout(modpack_edit_layout)
 
         self.setLayout(layout)
@@ -141,3 +145,10 @@ class ModpackConfigWindow(QDialog):
     def disable_all_mods(self):
         self.modpack.disable_all_mods()
         self.update_mods_list()  # Atualiza a lista de mod
+        
+    def install_mod(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Selecionar Mod", "", "Mod Files (*.zip *.rar);;All Files (*)")
+        if file_path:
+            self.modpack.install_mod(file_path)
+            self.update_mods_list()
+            QMessageBox.information(self, "Mod Instalado", "O mod foi instalado com sucesso.")
