@@ -99,6 +99,13 @@ class MenuView(QWidget):
             name_label = QLabel(modpack.name)
             self.info_layout.addWidget(name_label, 1, 0, alignment=Qt.AlignmentFlag.AlignCenter)
             
+            # Set o ícone da janela com o ícone da modpack selecionada
+            icon_pixmap = base64_to_img(modpack.image)
+            self.setWindowIcon(QIcon(icon_pixmap))
+
+            # Trocar o título da janela com o nome da modpack selecionada
+            self.setWindowTitle(f"M: {modpack.name}")
+            
             # Adicione os botões
             self.play_button = QPushButton('JOGAR')
             edit_button = QPushButton('EDITAR')

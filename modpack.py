@@ -309,6 +309,40 @@ class Modpack:
         return installed_mods
     #auto instalador de mods zip e rar --------------------------
     
+    def mod_dependencies_complete(self, mod):
+        """
+        Verifica se as dependências do mod estão completas na lista de mods da modpack.
+
+        Args:
+            mod (Mod): O objeto Mod cujas dependências devem ser verificadas.
+
+        Returns:
+            bool: True se todas as dependências estiverem completas, False caso contrário.
+        """
+        mods_enabled = self.get_enabled_mods()
+        missing_dependencies = []
+        
+        for dependency in mod.dependencies:
+            dependency_unique_id = dependency.get("UniqueID")
+            is_required = dependency.get("IsRequired", False)
+            
+            if dependency_unique_id:
+                found_dependency = False
+                for _mod in mods_enabled:
+                    if _mod.unique_id.lower() == dependency_unique_id.lower():
+                        found_dependency = True
+                        break
+                
+                if is_required and not found_dependency:
+                    missing_dependencies.append(dependency_unique_id)
+        
+        if missing_dependencies:
+            print(f"Missing dependencies for mod '{mod.name}': {', '.join(missing_dependencies)}")
+            return False
+            
+        return True
+
+    
     @classmethod
     def load_from_json(cls, name, base_directory=""):
         """

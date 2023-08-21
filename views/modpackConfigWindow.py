@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (
     QDialog, QLabel, QLineEdit, QPushButton, QVBoxLayout, QListWidgetItem,
     QListWidget, QHBoxLayout, QFileDialog, QMessageBox
 )
-from PyQt6.QtGui import QPixmap, QImage, QImageReader
+from PyQt6.QtGui import QPixmap, QImage, QImageReader, QColor, QBrush
 from PyQt6.QtCore import Qt
 
 def base64_to_img(_base64) -> QPixmap:
@@ -23,6 +23,7 @@ class ModpackConfigWindow(QDialog):
 
         # Parte esquerda: Lista de mods com caixas de seleção
         self.mods_list_widget = QListWidget()
+        self.mods_list_widget.itemDoubleClicked.connect(self.item_double_clicked)
         self.update_mods_list()  # Atualiza a lista de mods
         layout.addWidget(self.mods_list_widget)
 
@@ -80,16 +81,49 @@ class ModpackConfigWindow(QDialog):
         modpack_edit_layout.addWidget(install_mod_button)
         
         layout.addLayout(modpack_edit_layout)
-
         self.setLayout(layout)
-
+        
+    def item_double_clicked(self, item):
+        mod = item.data(Qt.ItemDataRole.UserRole)  # Obtém o objeto Mod associado ao item
+        if mod:
+            mod_folder_path = mod.mod_folder_path
+            if os.path.exists(mod_folder_path):
+                os.startfile(mod_folder_path)  # Abre a pasta do mod no sistema
+    
+    # def update_mods_list(self):
+    #     all_mods = sorted(self.modpack.list_all_mods()['enabled'] + self.modpack.list_all_mods()['disabled'])
+    #     self.mods_list_widget.clear()
+    #     for mod_name in all_mods:
+    #         item = QListWidgetItem(mod_name)
+    #         item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+    #         item.setCheckState(Qt.CheckState.Checked if mod_name in self.modpack.list_enabled_mods() else Qt.CheckState.Unchecked)
+    #         self.mods_list_widget.addItem(item)
     def update_mods_list(self):
-        all_mods = sorted(self.modpack.list_all_mods()['enabled'] + self.modpack.list_all_mods()['disabled'])
+        all_mods = sorted(self.modpack.get_enabled_mods() + self.modpack.get_disabled_mods(), key=lambda mod: mod.name)
         self.mods_list_widget.clear()
-        for mod_name in all_mods:
-            item = QListWidgetItem(mod_name)
+        
+        for mod in all_mods:
+            item = QListWidgetItem(mod.parent_folder_name)
+            item.setData(Qt.ItemDataRole.UserRole, mod)
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-            item.setCheckState(Qt.CheckState.Checked if mod_name in self.modpack.list_enabled_mods() else Qt.CheckState.Unchecked)
+            
+            if mod.parent_folder_name in self.modpack.list_enabled_mods():
+                item.setCheckState(Qt.CheckState.Checked)
+                dependencies_complete = self.modpack.mod_dependencies_complete(mod)
+                
+                if not dependencies_complete:
+                    brush = QBrush(QColor.fromRgb(255, 200, 200))  # Criando um pincel com a cor de fundo vermelho claro
+                    item.setText(f"{mod.parent_folder_name} - Incomplete")
+                else:
+                    brush = QBrush(QColor.fromRgb(200, 255, 200))  # Criando um pincel com a cor de fundo verde claro
+                    item.setText(mod.parent_folder_name)
+                
+                item.setBackground(brush)
+            else:
+                item.setCheckState(Qt.CheckState.Unchecked)
+                brush = QBrush(QColor.fromRgb(255, 200, 200))  # Criando um pincel com a cor de fundo vermelho claro
+                item.setBackground(brush)
+            
             self.mods_list_widget.addItem(item)
 
     def select_image(self):

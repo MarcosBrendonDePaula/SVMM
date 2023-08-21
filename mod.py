@@ -1,5 +1,5 @@
 import os
-import json
+import json , re
 
 # Classe personalizada para decodificação JSON
 class CustomJSONDecoder(json.JSONDecoder):
@@ -16,20 +16,31 @@ class CustomJSONDecoder(json.JSONDecoder):
         Returns:
             dict: O objeto Python correspondente aos dados JSON decodificados.
         """
+        s = self._remove_comments(s)
         s = self._remove_invalid_commas(s)
         return super().decode(s, _w)
-
-    def _remove_invalid_commas(self, s):
+    
+    def _remove_comments(self, s):
         """
-        Remove vírgulas inválidas de dicionários e listas vazias na string JSON.
+        Remove comentários do formato /* ... */ de uma string JSON.
         
         Args:
-            s (str): A string JSON contendo vírgulas inválidas.
+            s (str): A string JSON contendo comentários.
         
         Returns:
-            str: A string JSON com vírgulas inválidas removidas.
+            str: A string JSON com comentários removidos.
         """
-        s = s.replace(',}', '}').replace(',]', ']').replace(',  \n}', '}').replace(',  \n]', ']').replace(',\n   }', '}').replace(',\n   ]', ']')
+        return re.sub(r'/\*.*?\*/', '', s, flags=re.DOTALL)
+    
+    def _remove_invalid_commas(self, s):
+        # Remove espaços desnecessários após vírgulas
+        s = re.sub(r',\s+', ',', s)
+        # Coloca as vírgulas após chaves e colchetes na próxima linha
+        s = re.sub(r',(?=\s*[\}\]])', ',\n', s)
+        # Remove vírgulas extras dentro de objetos
+        s = re.sub(r',(\s*\})', r'\1', s)
+        # Remove vírgulas extras após o último elemento
+        s = re.sub(r',(\s*[\}\]])', r'\1', s)
         return s
 
 # Classe que representa um mod
@@ -58,16 +69,15 @@ class Mod:
         self.dependencies = []
 
         self.base_mods_directory = base_mods_directory
-
+        self.parent_folder_name = os.path.basename(mod_folder_path)
         # Carrega as informações do mod a partir do arquivo "manifest.json"
         self.load_manifest()
-
+    
     def load_manifest(self):
         """
         Carrega informações do arquivo "manifest.json" e popula os atributos do objeto Mod.
         """
         if os.path.exists(self.manifest_path):
-            print(self.manifest_path)
             with open(self.manifest_path, 'r', encoding='utf-8-sig') as manifest_file:
                 manifest_data = json.load(manifest_file, cls=CustomJSONDecoder)
             
