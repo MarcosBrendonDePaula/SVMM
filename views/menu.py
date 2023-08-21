@@ -8,7 +8,7 @@ import base64
 from config import Config
 from game import Game
 from modpack import Modpack
-from views.modpackConfigWindow import ModpackConfigWindow
+from views.modpack_config import ModpackConfigWindow
 
 def base64_to_img(_base64) -> QPixmap:
     icon_pixmap = QPixmap()

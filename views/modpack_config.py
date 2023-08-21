@@ -16,11 +16,10 @@ class ModpackConfigWindow(QDialog):
     def __init__(self, modpack):
         super().__init__()
         self.modpack = modpack
-        self.init_ui()
+        self.initUi()
 
-    def init_ui(self):
+    def initUi(self):
         layout = QHBoxLayout()
-
         # Parte esquerda: Lista de mods com caixas de seleção
         self.mods_list_widget = QListWidget()
         self.mods_list_widget.itemDoubleClicked.connect(self.item_double_clicked)
@@ -82,6 +81,7 @@ class ModpackConfigWindow(QDialog):
         
         layout.addLayout(modpack_edit_layout)
         self.setLayout(layout)
+        self.setWindowTitle("Modpack Editor")
         
     def item_double_clicked(self, item):
         mod = item.data(Qt.ItemDataRole.UserRole)  # Obtém o objeto Mod associado ao item
@@ -90,14 +90,6 @@ class ModpackConfigWindow(QDialog):
             if os.path.exists(mod_folder_path):
                 os.startfile(mod_folder_path)  # Abre a pasta do mod no sistema
     
-    # def update_mods_list(self):
-    #     all_mods = sorted(self.modpack.list_all_mods()['enabled'] + self.modpack.list_all_mods()['disabled'])
-    #     self.mods_list_widget.clear()
-    #     for mod_name in all_mods:
-    #         item = QListWidgetItem(mod_name)
-    #         item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-    #         item.setCheckState(Qt.CheckState.Checked if mod_name in self.modpack.list_enabled_mods() else Qt.CheckState.Unchecked)
-    #         self.mods_list_widget.addItem(item)
     def update_mods_list(self):
         all_mods = sorted(self.modpack.get_enabled_mods() + self.modpack.get_disabled_mods(), key=lambda mod: mod.name)
         self.mods_list_widget.clear()
@@ -123,7 +115,6 @@ class ModpackConfigWindow(QDialog):
                 item.setCheckState(Qt.CheckState.Unchecked)
                 brush = QBrush(QColor.fromRgb(255, 200, 200))  # Criando um pincel com a cor de fundo vermelho claro
                 item.setBackground(brush)
-            
             self.mods_list_widget.addItem(item)
 
     def select_image(self):
@@ -135,6 +126,14 @@ class ModpackConfigWindow(QDialog):
             if image_reader.size().isValid():
                 with open(image_path, 'rb') as image_file:
                     image_data = image_file.read()
+
+                    # Verifique o tamanho do arquivo (em bytes)
+                    max_file_size = 1024 * 1024  # 1 MB em bytes
+                    if len(image_data) > max_file_size:
+                        max_size_mb = max_file_size / (1024 * 1024)  # Convertendo para MB
+                        QMessageBox.critical(self, "Erro", f"A imagem selecionada é maior do que {max_size_mb:.2f} MB.")
+                        return
+
                     base64_image = base64.b64encode(image_data).decode('utf-8')
                     
                     self.image_edit.setText(base64_image)
