@@ -2,7 +2,7 @@
 import os, base64
 from PyQt6.QtGui import QPixmap
 
-class Conversor:
+class Converter:
     
     @staticmethod    
     def base64_to_QPixmap(_base64) -> QPixmap:

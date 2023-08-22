@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QPixmap, QImage, QImageReader, QColor, QBrush
 from PyQt6.QtCore import Qt
 
-from src.tools import (Conversor,Extractor,JasonAutoFix)
+from src.tools import (Converter,Extractor,JasonAutoFix)
 
 class ModpackConfigWindow(QDialog):
     def __init__(self, modpack):
@@ -41,7 +41,7 @@ class ModpackConfigWindow(QDialog):
         pixmap = None
         if self.modpack.image:
             try:
-                pixmap = Conversor.base64_to_QPixmap(self.modpack.image)
+                pixmap = Converter.base64_to_QPixmap(self.modpack.image)
             except Exception as e:
                 print("Erro ao carregar a imagem:", e)
 

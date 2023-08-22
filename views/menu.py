@@ -9,14 +9,7 @@ from src.config import Config
 from src.game import Game
 from src.modpack import Modpack
 from views.modpack_config import ModpackConfigWindow
-
-def base64_to_img(_base64) -> QPixmap:
-    icon_pixmap = QPixmap()
-    try:
-        icon_pixmap.loadFromData(base64.b64decode(_base64))  # Carregar o pixmap a partir dos dados
-    except:
-        pass
-    return icon_pixmap
+from src.tools import (Converter)
 
 class GameThread(QThread):
     finished = pyqtSignal()
@@ -36,7 +29,7 @@ class MenuView(QWidget):
     def create_system_tray_icon(self, modpack):
         self.tray_icon = QSystemTrayIcon(self)
         # Carregue o ícone da modpack e defina-o como o ícone da bandeja do sistema
-        modpack_icon = base64_to_img(modpack.image)
+        modpack_icon = Converter.base64_to_QPixmap(modpack.image)
         modpack_icon_resized = modpack_icon.scaledToHeight(16)  # Redimensione conforme necessário
         self.tray_icon.setIcon(QIcon(modpack_icon_resized))
         self.tray_icon.setToolTip('Seu aplicativo de modpacks')  # Substitua pela dica desejada
@@ -65,7 +58,7 @@ class MenuView(QWidget):
             item.setData(Qt.ItemDataRole.UserRole, modpack)  # Associe o objeto Modpack ao item da lista
             item.setText(modpack.name)  # Define o texto do item como o nome do modpack
             
-            icon_pixmap = base64_to_img(modpack.image)  # Converte a base64 em QPixmap
+            icon_pixmap = Converter.base64_to_QPixmap(modpack.image)  # Converte a base64 em QPixmap
             icon_pixmap_resized = icon_pixmap.scaledToHeight(32)  # Redimensione para 128 pixels de altura (ajuste conforme necessário)
             item.setIcon(QIcon(icon_pixmap_resized))  # Define o ícone do item
             list_widget.addItem(item)  # Adiciona o item à lista
@@ -90,7 +83,7 @@ class MenuView(QWidget):
             
             # Adicione imagem acima do nome da modpack
             icon_label = QLabel()
-            icon_pixmap = base64_to_img(modpack.image)  # Converte a base64 em QPixmap
+            icon_pixmap = Converter.base64_to_QPixmap(modpack.image)  # Converte a base64 em QPixmap
             icon_pixmap_resized = icon_pixmap.scaledToHeight(128)  # Redimensione para 128 pixels de altura (ajuste conforme necessário)
             icon_label.setPixmap(icon_pixmap_resized)
             self.info_layout.addWidget(icon_label, 0, 0, alignment=Qt.AlignmentFlag.AlignCenter)
@@ -100,7 +93,7 @@ class MenuView(QWidget):
             self.info_layout.addWidget(name_label, 1, 0, alignment=Qt.AlignmentFlag.AlignCenter)
             
             # Set o ícone da janela com o ícone da modpack selecionada
-            icon_pixmap = base64_to_img(modpack.image)
+            icon_pixmap = Converter.base64_to_QPixmap(modpack.image)
             self.setWindowIcon(QIcon(icon_pixmap))
 
             # Trocar o título da janela com o nome da modpack selecionada
