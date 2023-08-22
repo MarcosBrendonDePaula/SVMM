@@ -1,9 +1,9 @@
 from PyQt6.QtWidgets import QApplication
 import sys
 
-from config import Config
-from game import Game
-from modpack import Modpack
+from src.config import Config
+from src.game import Game
+from src.modpack import Modpack
 import os
 
 from views.menu import MenuView

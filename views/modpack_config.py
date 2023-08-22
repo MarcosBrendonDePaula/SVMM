@@ -7,10 +7,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QPixmap, QImage, QImageReader, QColor, QBrush
 from PyQt6.QtCore import Qt
 
-def base64_to_img(_base64) -> QPixmap:
-    icon_pixmap = QPixmap()
-    icon_pixmap.loadFromData(base64.b64decode(_base64))  # Carregar o pixmap a partir dos dados
-    return icon_pixmap
+from src.tools import (Conversor,Extractor,JasonAutoFix)
 
 class ModpackConfigWindow(QDialog):
     def __init__(self, modpack):
@@ -44,7 +41,7 @@ class ModpackConfigWindow(QDialog):
         pixmap = None
         if self.modpack.image:
             try:
-                pixmap = base64_to_img(self.modpack.image)
+                pixmap = Conversor.base64_to_QPixmap(self.modpack.image)
             except Exception as e:
                 print("Erro ao carregar a imagem:", e)
 
@@ -128,7 +125,7 @@ class ModpackConfigWindow(QDialog):
                     image_data = image_file.read()
 
                     # Verifique o tamanho do arquivo (em bytes)
-                    max_file_size = 1024 * 1024  # 1 MB em bytes
+                    max_file_size = 1024 * 1024 * 15  # 15 MB em bytes
                     if len(image_data) > max_file_size:
                         max_size_mb = max_file_size / (1024 * 1024)  # Convertendo para MB
                         QMessageBox.critical(self, "Erro", f"A imagem selecionada é maior do que {max_size_mb:.2f} MB.")

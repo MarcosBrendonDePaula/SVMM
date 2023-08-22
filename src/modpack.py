@@ -5,34 +5,11 @@ import shutil
 
 import tempfile
 import re
-import zipfile
-import winreg
 from pyunpack import Archive
-import subprocess
 
-def get_winrar_installation_path():
-    try:
-        # Abrir a chave de registro correspondente à instalação do WinRAR
-        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\WinRAR.exe") as key:
-            # Obter o valor padrão (que é o caminho de instalação do WinRAR)
-            winrar_path = winreg.QueryValue(key, None)
-            return winrar_path
-    except Exception:
-        return None
+from src.tools import Extractor
 
-def extract_rar(rar_file, output_path):
-    winrar_path = get_winrar_installation_path()
-    if not winrar_path:
-        print("WinRAR não foi encontrado. Certifique-se de que o WinRAR está instalado e registrado no registro do Windows.")
-        return
-    try:
-        subprocess.run([winrar_path, 'x', rar_file, output_path], shell=True, check=True)
-    except subprocess.CalledProcessError as e:
-        print(f"Ocorreu um erro ao converter o arquivo: {e}")
-    finally:
-        pass
-
-from mod import Mod
+from src.mod import Mod
 
 class Modpack:
     """Classe para representar e gerenciar modpacks do jogo."""
@@ -238,39 +215,33 @@ class Modpack:
     
     #auto instalador de mods zip e rar --------------------------
     def install_mod(self, file):
-        """
-        Instala um mod a partir de um arquivo zip ou rar.
-
-        Args:
-            file (str): Caminho para o arquivo zip ou rar contendo o mod.
-        """
         temp_dir = tempfile.mkdtemp()
-        os.system(f'rmdir /s /q "{temp_dir}"')
         
-        os.makedirs(temp_dir, exist_ok=True)
-        is_zip = file.lower().endswith('.zip')
-        is_rar = file.lower().endswith('.rar')
-        
-        if is_rar:
-            extract_rar(file, os.path.join(temp_dir,''))
-            print(temp_dir)
-        elif is_zip:
-            Archive(file).extractall(temp_dir)
-        else:
-            print("Formato de arquivo não suportado")
+        try:
+            Extractor.extract(file, os.path.join(temp_dir, ''))
+        except Exception as e:
+            print(e)
             return
         
         self._fix_folder_names(temp_dir)
         mods = self.find_installed_mods(temp_dir)
-        # Mover os mods instalados para a pasta "mods_enabled"
         destination_folder = self.mods_enabled_path
+        
         for mod_path in mods:
             mod_name = os.path.basename(mod_path)
             mod_destination = os.path.join(destination_folder, mod_name)
+            
             if not os.path.exists(mod_destination):
                 shutil.move(mod_path, mod_destination)
             else:
-                print(f"The mod '{mod_name}' is already installed.")
+                print(f"O mod '{mod_name}' já está instalado.")
+        
+        # Remover a pasta pai onde os mods estavam originalmente
+        try:
+            shutil.rmtree(temp_dir)
+            print(f"Diretório '{temp_dir}' removido após a instalação dos mods.")
+        except Exception as e:
+            print(f"Erro ao remover pasta temporária '{temp_dir}':", e)
 
     def _fix_folder_names(self, source_folder):
 

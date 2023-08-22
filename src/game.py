@@ -1,7 +1,7 @@
 import os
 import shlex
 
-from config import Config
+from src.config import Config
 
 
 class Game:

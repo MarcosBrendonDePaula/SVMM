@@ -1,6 +1,7 @@
 import os
 import json , re
 
+from src.tools import (JasonAutoFix)
 # Classe personalizada para decodificação JSON
 class CustomJSONDecoder(json.JSONDecoder):
     """
@@ -78,8 +79,7 @@ class Mod:
         Carrega informações do arquivo "manifest.json" e popula os atributos do objeto Mod.
         """
         if os.path.exists(self.manifest_path):
-            with open(self.manifest_path, 'r', encoding='utf-8-sig') as manifest_file:
-                manifest_data = json.load(manifest_file, cls=CustomJSONDecoder)
+            manifest_data = JasonAutoFix.load(self.manifest_path)
             
             # Extrai informações do arquivo JSON carregado
             self.name = manifest_data.get("Name", "")

@@ -5,9 +5,9 @@ from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 import base64
 
-from config import Config
-from game import Game
-from modpack import Modpack
+from src.config import Config
+from src.game import Game
+from src.modpack import Modpack
 from views.modpack_config import ModpackConfigWindow
 
 def base64_to_img(_base64) -> QPixmap:
