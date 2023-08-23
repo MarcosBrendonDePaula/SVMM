@@ -70,57 +70,17 @@ class MenuView(QWidget):
         if selected_items:
             selected_item = selected_items[0]  # Use o primeiro item selecionado, se houver
             modpack = selected_item.data(Qt.ItemDataRole.UserRole)  # Obtém o objeto Modpack associado ao item
-            # Limpe e atualize o layout de informações
-            while self.info_layout.count():
-                item = self.info_layout.takeAt(0)
-                widget = item.widget()
-                if widget is not None:
-                    widget.deleteLater()
-            
-            # Limpe e atualize o layout de informações
-            for i in reversed(range(self.info_layout.count())):
-                self.info_layout.itemAt(i).widget().setParent(None)
-            
-            # Adicione imagem acima do nome da modpack
-            icon_label = QLabel()
+        
             icon_pixmap = Converter.base64_to_QPixmap(modpack.image)  # Converte a base64 em QPixmap
             icon_pixmap_resized = icon_pixmap.scaledToHeight(128)  # Redimensione para 128 pixels de altura (ajuste conforme necessário)
-            icon_label.setPixmap(icon_pixmap_resized)
-            self.info_layout.addWidget(icon_label, 0, 0, alignment=Qt.AlignmentFlag.AlignCenter)
-            
-            # Adicione nome da modpack
-            name_label = QLabel(modpack.name)
-            self.info_layout.addWidget(name_label, 1, 0, alignment=Qt.AlignmentFlag.AlignCenter)
-            
-            # Set o ícone da janela com o ícone da modpack selecionada
-            icon_pixmap = Converter.base64_to_QPixmap(modpack.image)
-            self.setWindowIcon(QIcon(icon_pixmap))
+            self.icon_label.setPixmap(icon_pixmap_resized)
 
+            self.name_label.setText(modpack.name)
+            self.setWindowIcon(QIcon(icon_pixmap))
+            
             # Trocar o título da janela com o nome da modpack selecionada
             self.setWindowTitle(f"M: {modpack.name}")
-            
-            # Adicione os botões
-            self.play_button = QPushButton('JOGAR')
-            edit_button = QPushButton('EDITAR')
-            remove_button = QPushButton('REMOVER')
-            
-            # Associe funções aos botões, se necessário
-            self.play_button.clicked.connect(self.play_modpack)
-            edit_button.clicked.connect(self.edit_modpack)
-            remove_button.clicked.connect(self.remove_modpack)
-            
-            # Adicione os botões ao layout
-            button_layout = QGridLayout()
-            button_layout.addWidget(self.play_button, 0, 0)
-            button_layout.addWidget(edit_button, 0, 1)
-            button_layout.addWidget(remove_button, 0, 2)
-            
-            # Adicione o layout de botões ao layout de informações
-            self.info_layout.addLayout(button_layout, 2, 0, 1, 2, alignment=Qt.AlignmentFlag.AlignCenter)
-            
-            # Configure o layout de informações na posição desejada
-            self.layout().addLayout(self.info_layout, 0, 2, 5, 2)
-            self.layout().update()
+            self.info_layout.update()
     
     def play_modpack(self):
         list_widget = self.findChild(QListWidget, "list_widget")
@@ -207,7 +167,7 @@ class MenuView(QWidget):
     
     def init_ui(self):
         layout = QGridLayout()
-
+        self.info_layout = QGridLayout()
         # Adicionar lista à esquerda
         list_widget = QListWidget(self)
         list_widget.setObjectName("list_widget")  # Defina o nome do objeto
@@ -218,8 +178,45 @@ class MenuView(QWidget):
         create_button.clicked.connect(self.create_modpack)
         layout.addWidget(create_button, 5, 0, 1, 2, alignment=Qt.AlignmentFlag.AlignCenter)
     
+        # Adicione imagem acima do nome da modpack
+        self.icon_label = QLabel()
+        self.icon_pixmap = QPixmap()  # Você deve definir a imagem corretamente aqui
+        icon_pixmap_resized = self.icon_pixmap.scaledToHeight(128)  # Redimensione para 128 pixels de altura (ajuste conforme necessário)
+        self.icon_label.setPixmap(icon_pixmap_resized)
+        self.info_layout.addWidget(self.icon_label, 0, 0, alignment=Qt.AlignmentFlag.AlignCenter)
+        
+        # Adicione nome da modpack
+        self.name_label = QLabel()  # Defina o nome da modpack corretamente aqui
+        self.info_layout.addWidget(self.name_label, 1, 0, alignment=Qt.AlignmentFlag.AlignCenter)
+    
+        # Adicione os botões
+        self.play_button = QPushButton('JOGAR')
+        self.edit_button = QPushButton('EDITAR')
+        self.remove_button = QPushButton('REMOVER')
+        
+        # Associe funções aos botões, se necessário
+        self.play_button.clicked.connect(self.play_modpack)
+        self.edit_button.clicked.connect(self.edit_modpack)
+        self.remove_button.clicked.connect(self.remove_modpack)
+        
+        # Adicione os botões ao layout
+        button_layout = QGridLayout()
+        button_layout.addWidget(self.play_button, 0, 0)
+        button_layout.addWidget(self.edit_button, 0, 1)
+        button_layout.addWidget(self.remove_button, 0, 2)
+            
+        # Adicione o layout de botões ao layout de informações
+        self.info_layout.addLayout(button_layout, 2, 0, 1, 2, alignment=Qt.AlignmentFlag.AlignCenter)
+            
+        # Configure o layout de informações na posição desejada
+        layout.addLayout(self.info_layout, 0, 2, 5, 2)
+    
         self.setLayout(layout)
         self.ListAllModpacks()
+        
+        if list_widget.count() > 0:  # Verifica se a lista não está vazia
+            list_widget.setCurrentRow(0)  # Seleciona o primeiro item da lista
+        
         self.setGeometry(100, 100, 800, 600)
         self.setWindowTitle('Teste de Layout')
         self.show()
