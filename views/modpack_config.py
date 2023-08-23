@@ -17,6 +17,7 @@ class ModpackConfigWindow(QDialog):
 
     def initUi(self):
         layout = QHBoxLayout()
+        self.image = None
         # Parte esquerda: Lista de mods com caixas de seleção
         self.mods_list_widget = QListWidget()
         self.mods_list_widget.itemDoubleClicked.connect(self.item_double_clicked)
@@ -51,7 +52,6 @@ class ModpackConfigWindow(QDialog):
             desired_height = 200
             pixmap_resized = pixmap.scaled(desired_width, desired_height, Qt.AspectRatioMode.KeepAspectRatio)
             self.image_preview.setPixmap(pixmap_resized)
-        
         modpack_edit_layout.addWidget(self.image_preview)
 
         select_image_button = QPushButton('Selecionar Imagem')
@@ -154,9 +154,10 @@ class ModpackConfigWindow(QDialog):
 
         if new_name != self.modpack.name:
             self.modpack.rename_modpack(new_name)
-
+        if self.image:
+            self.modpack.image = self.image
+        
         self.modpack.name = new_name
-        self.modpack.image = self.image
         self.modpack.save()
 
         self.close()
