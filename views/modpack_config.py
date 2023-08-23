@@ -127,9 +127,7 @@ class ModpackConfigWindow(QDialog):
                         QMessageBox.critical(self, "Erro", f"A imagem selecionada é maior do que {max_size_mb:.2f} MB.")
                         return
 
-                    base64_image = base64.b64encode(image_data).decode('utf-8')
-                    
-                    self.image_edit.setText(base64_image)
+                    self.image = base64.b64encode(image_data).decode('utf-8')
                     
                     # Redimensionar a imagem para 200x200
                     pixmap = QPixmap.fromImage(QImage.fromData(image_data))
@@ -153,13 +151,12 @@ class ModpackConfigWindow(QDialog):
 
         # Atualize o nome e a imagem da modpack
         new_name = self.name_edit.text()
-        new_image = self.image_edit.text()
 
         if new_name != self.modpack.name:
             self.modpack.rename_modpack(new_name)
 
         self.modpack.name = new_name
-        self.modpack.image = new_image
+        self.modpack.image = self.image
         self.modpack.save()
 
         self.close()
