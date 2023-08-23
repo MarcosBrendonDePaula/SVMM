@@ -215,7 +215,10 @@ class Modpack:
     
     #auto instalador de mods zip e rar --------------------------
     def install_mod(self, file):
-        temp_dir = tempfile.mkdtemp()
+        #Criar pasta oculta temporaria para instalar os mods
+        temp_dir = 'temp_files'
+        os.makedirs(temp_dir, exist_ok=True)
+        os.system(f'attrib +h "{temp_dir}"')
         
         try:
             Extractor.extract(file, os.path.join(temp_dir, ''))
