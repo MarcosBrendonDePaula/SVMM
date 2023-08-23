@@ -169,8 +169,7 @@ class MenuView(QWidget):
         layout = QGridLayout()
         self.info_layout = QGridLayout()
         
-        font = QFont()
-        font.setFamily("Helvetica")  # Defina a família da fonte desejada
+        font = QFont("Roboto", weight=QFont.Weight.Bold)
         font.setPointSize(25)  # Defina o tamanho da fonte
         
         # Adicione imagem acima do nome da modpack
@@ -182,8 +181,7 @@ class MenuView(QWidget):
         
         # Adicione nome da modpack
         self.name_label = QLabel()  # Defina o nome da modpack corretamente aqui
-        font = QFont()
-        font.setFamily("Helvetica")  # Defina a família da fonte desejada
+        font = QFont("Roboto", weight=QFont.Weight.Bold)
         font.setPointSize(25)  # Defina o tamanho da fonte
         self.name_label.setFont(font)
         self.info_layout.addWidget(self.name_label, 1, 0, 1, 2, alignment=Qt.AlignmentFlag.AlignCenter)

@@ -99,19 +99,15 @@ class ModpackConfigWindow(QDialog):
             if mod.parent_folder_name in self.modpack.list_enabled_mods():
                 item.setCheckState(Qt.CheckState.Checked)
                 dependencies_complete = self.modpack.mod_dependencies_complete(mod)
-                
                 if not dependencies_complete:
                     brush = QBrush(QColor.fromRgb(255, 200, 200))  # Criando um pincel com a cor de fundo vermelho claro
                     item.setText(f"{mod.parent_folder_name} - Incomplete")
                 else:
                     brush = QBrush(QColor.fromRgb(200, 255, 200))  # Criando um pincel com a cor de fundo verde claro
                     item.setText(mod.parent_folder_name)
-                
                 item.setBackground(brush)
             else:
                 item.setCheckState(Qt.CheckState.Unchecked)
-                brush = QBrush(QColor.fromRgb(255, 200, 200))  # Criando um pincel com a cor de fundo vermelho claro
-                item.setBackground(brush)
             self.mods_list_widget.addItem(item)
 
     def select_image(self):
@@ -150,10 +146,11 @@ class ModpackConfigWindow(QDialog):
         for row in range(self.mods_list_widget.count()):
             item = self.mods_list_widget.item(row)
             mod_name = item.text()
+            print(item.checkState())
             if item.checkState() == Qt.CheckState.Checked:
-                self.modpack.enable_mod(mod_name)
+                self.modpack.enable_mod(mod_name.replace(' - Incomplete',""))
             else:
-                self.modpack.disable_mod(mod_name)
+                self.modpack.disable_mod(mod_name.replace(' - Incomplete',""))
 
         # Atualize o nome e a imagem da modpack
         new_name = self.name_edit.text()

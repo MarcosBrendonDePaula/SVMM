@@ -99,7 +99,6 @@ class Modpack:
         """
         source_path = os.path.join(self.mods_enabled_path, mod_name)
         destination_path = os.path.join(self.mods_disabled_path, mod_name)
-        
         if os.path.exists(source_path):
             os.rename(source_path, destination_path)
             self.save()
