@@ -146,7 +146,6 @@ class ModpackConfigWindow(QDialog):
         for row in range(self.mods_list_widget.count()):
             item = self.mods_list_widget.item(row)
             mod_name = item.text()
-            print(item.checkState())
             if item.checkState() == Qt.CheckState.Checked:
                 self.modpack.enable_mod(mod_name.replace(' - Incomplete',""))
             else:
