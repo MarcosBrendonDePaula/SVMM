@@ -4,8 +4,8 @@ from PyQt6.QtWidgets import (
     QDialog, QLabel, QLineEdit, QPushButton, QVBoxLayout, QListWidgetItem,
     QListWidget, QHBoxLayout, QFileDialog, QMessageBox
 )
-from PyQt6.QtGui import QPixmap, QImage, QImageReader, QColor, QBrush
-from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPixmap, QImage, QImageReader, QColor, QBrush, QCursor, QIcon
+from PyQt6.QtCore import Qt, QSize
 
 from src.tools import (Converter,Extractor,JasonAutoFix)
 
@@ -36,6 +36,33 @@ class ModpackConfigWindow(QDialog):
         self.image_edit = QLineEdit(self.modpack.image)
         modpack_edit_layout.addWidget(image_label)
 
+        # Layou horontal para ancorar botao de trocar imagem ao topo na direita
+        hbox_layout = QHBoxLayout()
+
+        self.change_image_button = QPushButton()
+        # self.change_image_button.setAlignment(Qt.AlignmentFlag.AlignRight)
+        # print(os.path.abspath("") + "\\resources\img")
+        
+        # self.change_image_button.setPixmap(QPixmap(os.path.abspath("") + "\\resources\img\camera_icon.png").scaled(30, 30, Qt.AspectRatioMode.KeepAspectRatio))
+
+        self.change_image_button.setIcon(QIcon(os.path.abspath("") + "\\resources\img\camera_icon.png"))
+
+        self.change_image_button.setIconSize(QSize(30, 30))
+
+        self.change_image_button.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+
+        self.change_image_button.setToolTip('Modificar imagem')
+
+        self.change_image_button.clicked.connect(self.select_image)
+
+        self.change_image_button.setStyleSheet('border: none;')
+
+        hbox_layout.addStretch()
+
+        hbox_layout.addWidget(self.change_image_button)
+
+        modpack_edit_layout.addLayout(hbox_layout)
+
         self.image_preview = QLabel()
         self.image_preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
@@ -54,9 +81,12 @@ class ModpackConfigWindow(QDialog):
             self.image_preview.setPixmap(pixmap_resized)
         modpack_edit_layout.addWidget(self.image_preview)
 
-        select_image_button = QPushButton('Selecionar Imagem')
-        select_image_button.clicked.connect(self.select_image)
-        modpack_edit_layout.addWidget(select_image_button)
+        #Ajustar imagem ao topo caso a janela seja redimensionada
+        modpack_edit_layout.addStretch()
+
+        # select_image_button = QPushButton('Selecionar Imagem')
+        # select_image_button.clicked.connect(self.select_image)
+        # modpack_edit_layout.addWidget(select_image_button)
 
         confirm_button = QPushButton('Confirmar')
         confirm_button.clicked.connect(self.confirm_changes)

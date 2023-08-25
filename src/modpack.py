@@ -359,7 +359,7 @@ class Modpack:
                 modpack_data['token'] = ""
             if not "hash" in modpack_data:
                 modpack_data['hash'] = ""
-            if not "version" in modpack_data['version']:
+            if not "version" in modpack_data:
                 modpack_data['version'] = "0.0.0"
             modpack = cls(name, modpack_data['image'], modpack_data['uuid'], modpack_data['token'], modpack_data['hash'], modpack_data['version'], base_directory=base_directory)
             return modpack
