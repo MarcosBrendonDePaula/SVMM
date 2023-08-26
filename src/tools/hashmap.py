@@ -36,6 +36,19 @@ class HashMap:
             self.hashmap = self.create_hashmap()
             self.save_to_file(self.hashmap_file_path)
 
+    def hash_file(self, file_path):
+        """
+        Calcula o hash MD5 de um arquivo.
+
+        :param file_path: Caminho absoluto para o arquivo.
+        :return: O valor de hash MD5 em formato hexadecimal.
+        """
+        hash_md5 = hashlib.md5()
+        with open(file_path, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_md5.update(chunk)
+        return hash_md5.hexdigest()
+    
     def hash_files(self, files):
         """
         Calcula o hash MD5 de uma lista de arquivos.
@@ -73,12 +86,12 @@ class HashMap:
 
         hashmap = {}
         for root, dirs, files in os.walk(self.directory):
-            if files:
-                dir_hash = self.hash_directory(root, "")
-                relative_path = os.path.relpath(root, self.directory)
-                hashmap[relative_path] = dir_hash
-                self.parent_changes.add(relative_path)
-                progress_bar.update(len(files))
+            for file in files:
+                file_path = os.path.join(root, file)
+                file_hash = self.hash_file(file_path)
+                relative_path = os.path.relpath(file_path, self.directory).replace("\\", "/")
+                hashmap[relative_path] = file_hash
+                progress_bar.update(1)
 
         progress_bar.close()
 
@@ -98,18 +111,23 @@ class HashMap:
 
         # Primeiro, verifica as pastas pai que tiveram mudanças
         for parent_folder in self.parent_changes:
+            if parent_folder not in other_hashmap.parent_changes:
+                continue
+
             if self.hashmap[parent_folder] != other_hashmap.hashmap[parent_folder]:
                 differences[parent_folder] = (
                     self.hashmap[parent_folder], other_hashmap.hashmap[parent_folder]
                 )
+
             # Agora, verifique os filhos dessa pasta
             for key in self.hashmap.keys():
                 if key.startswith(parent_folder + os.path.sep):
-                    if self.hashmap[key] != other_hashmap.hashmap[key]:
-                        differences[key] = (
-                            self.hashmap[key], other_hashmap.hashmap[key]
-                        )
-
+                    if key in other_hashmap.hashmap:
+                        if self.hashmap[key] != other_hashmap.hashmap[key]:
+                            differences[key] = (
+                                self.hashmap[key], other_hashmap.hashmap[key]
+                            )
+        
         return differences
 
     def save_to_file(self, file_path):
@@ -133,3 +151,9 @@ class HashMap:
         except FileNotFoundError:
             print(f"Arquivo {file_path} não encontrado. Criando novo hashmap.")
             self.hashmap = self.create_hashmap()
+    
+    def load_from_json(self, json:json):
+        """
+        Carrega um hashmap existente de uma variavel JSON.
+        """
+        self.hashmap = json

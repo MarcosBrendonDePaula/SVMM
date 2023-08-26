@@ -1,6 +1,7 @@
 import json
 import os
 import base64
+from pathlib import Path
 import shutil
 import uuid
 import secrets
@@ -8,14 +9,14 @@ import tempfile
 import re
 from pyunpack import Archive
 
-from src.tools import Extractor
-
 from src.mod import Mod
+from src.config import Config
+from src.tools import JasonAutoFix,HashMap,ModpackApi,Extractor
 
 class Modpack:
     """Classe para representar e gerenciar modpacks do jogo."""
 
-    def __init__(self, name, image="", _uuid="", token="", hash="", version="0.0.0", base_directory=""):
+    def __init__(self, name, image="", _uuid="", token="", version="0.0.0", base_directory=""):
         """Inicializa uma instância da classe Modpack."""
         
         f_save = False
@@ -30,7 +31,6 @@ class Modpack:
         self.image   = image
         self._uuid   = _uuid
         self.token   = token
-        self.hash    = hash
         self.version = version
         
         folder_path = os.path.join(base_directory, 'modpacks', name)
@@ -57,6 +57,10 @@ class Modpack:
         if f_save:
             self.save()
         
+        conf = Config()
+        server_host = f"{conf.get('SYNCAPI','protocol')}://{conf.get('SYNCAPI','host')}"
+        self.api = ModpackApi(server_host)
+        
     def to_dict(self):
         """Converte a modpack em um dicionário."""
         return {
@@ -64,7 +68,6 @@ class Modpack:
             'image': self.image,
             'token': self.token,
             'uuid' : self._uuid,
-            'hash' : self.hash,
             'version': self.version
         }
     
@@ -336,6 +339,77 @@ class Modpack:
             
         return True
 
+    def sync(self):
+        info = self.api.get_modpack_info(self._uuid)
+        # se a modpack não existir crie ela no servidor
+        if info['status'] == 404:
+            self.api.create_modpack_directory(self._uuid, self.token)
+            with open(Path(self.folder_path) / "modpack.json", 'rb') as file:
+                self.api.upload_file(self._uuid, self.token, "modpack.json", file)
+            self.send_all_files()
+        else:
+            self.send_all_files()
+    
+    def send_all_files(self):
+        info = self.api.get_modpack_info(self._uuid)
+        folder = Path(self.folder_path)
+        HashMap(self.folder_path)
+        for mod_file in folder.glob('**/*'):
+            if mod_file.is_file():
+                with open(mod_file, 'rb') as file:
+                    relative_path = mod_file.relative_to(folder)
+                    res = self.api.upload_file(self._uuid, self.token, str(relative_path).replace('\\','/'), file)  
+    
+    def updateMyModpack(self):
+        # local_hash = HashMap(self.folder_path, True)
+        # temp_hash = HashMap(self.folder_path, True)
+        res = self.api.get_modpack_hash_map(self._uuid)
+        if res['status'] == 200:
+            # temp_hash.load_from_json(res['json'])
+            # print(local_hash.compare(temp_hash))
+            self.download_hash_files(res['json'])
+        pass
+    
+    def download_hash_files(self, hash_json):
+        modpack_json_token = None
+        
+        # Check if modpack.json exists in the folder and store the token
+        modpack_json_path = Path(self.folder_path) / "modpack.json"
+        if modpack_json_path.exists():
+            with modpack_json_path.open("r") as json_file:
+                modpack_data = json.load(json_file)
+                modpack_json_token = modpack_data.get("token")
+                print("Found existing modpack.json with token:", modpack_json_token)
+
+        for file_path, file_hash in hash_json.items():
+            if file_path.lower().find("desktop.ini") > -1:
+                print(f"Ignoring {file_path}...")
+                continue
+            
+            res = self.api.download_modpack_file(self._uuid, file_path)
+            if res['status'] == 200:
+                content = res['content']
+                local_file_path = Path(self.folder_path) / file_path.replace("/", os.path.sep)
+
+                # Ensure the parent directory exists
+                local_file_path.parent.mkdir(parents=True, exist_ok=True)
+
+                print(f"Saving {file_path}...")
+                with local_file_path.open('wb') as local_file:
+                    local_file.write(content)
+                print(f"Saved {file_path} successfully.")
+                
+                # Check if modpack.json is being downloaded
+                if file_path.lower() == "modpack.json":
+                    with local_file_path.open("r") as json_file:
+                        modpack_data = json.load(json_file)
+                    modpack_json_token = modpack_data.get("token")
+                    print("Found token in modpack.json:", modpack_json_token)
+                    if modpack_json_token is not None:
+                        with local_file_path.open("w") as json_file:
+                            modpack_data["token"] = modpack_json_token
+                            json.dump(modpack_data, json_file, indent=4)
+                        print("Replaced token in modpack.json")
     
     @classmethod
     def load_from_json(cls, name, base_directory=""):
@@ -350,18 +424,17 @@ class Modpack:
             Modpack: Instância da classe Modpack com os dados carregados.
         """
         json_filename = os.path.join(base_directory, 'modpacks', name, 'modpack.json')
+        
         if os.path.exists(json_filename):
-            with open(json_filename, 'r') as json_file:
-                modpack_data = json.load(json_file)
+
+            modpack_data = JasonAutoFix.load(json_filename)
             if not "uuid" in modpack_data:
                 modpack_data['uuid'] = ""
             if not "token" in modpack_data:
                 modpack_data['token'] = ""
-            if not "hash" in modpack_data:
-                modpack_data['hash'] = ""
             if not "version" in modpack_data:
                 modpack_data['version'] = "0.0.0"
-            modpack = cls(name, modpack_data['image'], modpack_data['uuid'], modpack_data['token'], modpack_data['hash'], modpack_data['version'], base_directory=base_directory)
+            modpack = cls(name, modpack_data['image'], modpack_data['uuid'], modpack_data['token'], modpack_data['version'], base_directory=base_directory)
             return modpack
         return None  # Retorna None se o arquivo JSON não existir
     

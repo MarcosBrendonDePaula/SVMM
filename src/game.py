@@ -1,6 +1,6 @@
 import os
 import shlex
-
+from pathlib import Path
 from src.config import Config
 
 
@@ -24,13 +24,12 @@ class Game:
         print(game_path)
 
         if game_path and mods_folder:
-            exe_path = f'"{game_path}/StardewModdingAPI.exe"'
-            command = f'"{exe_path}" --mods-path {mods_folder}'
+            exe_path = Path(game_path) / "StardewModdingAPI.exe"
+            command = f'"{exe_path}" --mods-path "{mods_folder}"'
             if os.name == 'posix':  # Linux
                 command = shlex.quote(command)
-            print(command)
             self.running = True
-            os.system(command)
+            os.system(f'"{command}"')
         else:
             print("Game path or mods folder not set. Please configure them.")
 

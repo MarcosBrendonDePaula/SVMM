@@ -52,6 +52,8 @@ class Config:
         print(self.find_stardew_valley_installation_path())
         self.set('GAME', 'gamepath', self.find_stardew_valley_installation_path())
         self.set('GAME', 'modsfolder', 'Mods')
+        self.set('SYNCAPI', 'host', 'svmgapi.marcosbrendon.com:3000')
+        self.set('SYNCAPI', 'protocol', 'http')
 
     def find_steam_installation_path(self):
         if platform.system() == 'Windows':

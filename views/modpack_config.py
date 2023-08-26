@@ -87,11 +87,19 @@ class ModpackConfigWindow(QDialog):
         # select_image_button = QPushButton('Selecionar Imagem')
         # select_image_button.clicked.connect(self.select_image)
         # modpack_edit_layout.addWidget(select_image_button)
+        
+        SYNC_button = QPushButton('UPLOAD')
+        SYNC_button.clicked.connect(self.sync_modpack)
+        modpack_edit_layout.addWidget(SYNC_button)
+        
+        UPDATE_button = QPushButton('DOWNLOAD')
+        UPDATE_button.clicked.connect(self.update_modpack)
+        modpack_edit_layout.addWidget(UPDATE_button)
 
-        confirm_button = QPushButton('Confirmar')
-        confirm_button.clicked.connect(self.confirm_changes)
-        modpack_edit_layout.addWidget(confirm_button)
-
+        install_mod_button = QPushButton('Instalar Mod')
+        install_mod_button.clicked.connect(self.install_mod)
+        modpack_edit_layout.addWidget(install_mod_button)
+        
         # Habilitar todos os mods
         enable_all_button = QPushButton('Habilitar Todos')
         enable_all_button.clicked.connect(self.enable_all_mods)
@@ -102,14 +110,22 @@ class ModpackConfigWindow(QDialog):
         enable_all_button.clicked.connect(self.disable_all_mods)
         modpack_edit_layout.addWidget(enable_all_button)
         
-        install_mod_button = QPushButton('Instalar Mod')
-        install_mod_button.clicked.connect(self.install_mod)
-        modpack_edit_layout.addWidget(install_mod_button)
+        confirm_button = QPushButton('Salvar')
+        confirm_button.clicked.connect(self.confirm_changes)
+        modpack_edit_layout.addWidget(confirm_button)
         
         layout.addLayout(modpack_edit_layout)
         self.setLayout(layout)
         self.setWindowTitle("Modpack Editor")
-        
+    
+    def sync_modpack(self):
+        self.modpack.sync()
+        pass
+    
+    def update_modpack(self):
+        self.modpack.updateMyModpack()
+        pass
+    
     def item_double_clicked(self, item):
         mod = item.data(Qt.ItemDataRole.UserRole)  # Obtém o objeto Mod associado ao item
         if mod:

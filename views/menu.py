@@ -1,3 +1,5 @@
+import json
+from pathlib import Path
 import sys
 import os
 from PyQt6.QtWidgets import QApplication, QMenu ,QSystemTrayIcon, QWidget, QLabel, QGridLayout, QListWidget, QListWidgetItem, QPushButton, QLineEdit, QVBoxLayout, QDialog
@@ -156,6 +158,25 @@ class MenuView(QWidget):
 
         dialog.setLayout(layout)
         dialog.exec()
+        
+    def create_remote_modpack(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle('External Pack')
+        
+        layout = QVBoxLayout()
+        
+        label = QLabel('modpack uuid')
+        layout.addWidget(label)
+        
+        name_input = QLineEdit()
+        layout.addWidget(name_input)
+        
+        confirm_button = QPushButton('Criar')
+        confirm_button.clicked.connect(lambda: self.confirm_create_remote_modpack(name_input.text(), dialog))
+        layout.addWidget(confirm_button)
+
+        dialog.setLayout(layout)
+        dialog.exec()
     
     def confirm_create_modpack(self, modpack_name, dialog):
         if modpack_name:
@@ -164,6 +185,24 @@ class MenuView(QWidget):
             # Atualizar a lista de modpacks
             self.ListAllModpacks()
             dialog.close()
+            
+    def confirm_create_remote_modpack(self, uuid, dialog):
+        if uuid:
+            from src.tools import ModpackApi
+            conf = Config()
+            server_host = f"{conf.get('SYNCAPI','protocol')}://{conf.get('SYNCAPI','host')}"
+            api = ModpackApi(server_host)
+            
+            resp = api.get_modpack_info(uuid)
+            if resp['status'] == 200:
+                modpack = Modpack(resp['json']['name'])
+                # Create the path for modpack.json in the modpack folder
+                modpack_json_path = Path(modpack.folder_path) / "modpack.json"
+                # Write the JSON content to modpack.json
+                with modpack_json_path.open('w') as json_file:
+                    json.dump(resp['json'], json_file, indent=4)
+                    self.ListAllModpacks()
+                    dialog.close()
     
     def init_ui(self):
         layout = QGridLayout()
@@ -194,8 +233,13 @@ class MenuView(QWidget):
         # Adicionar botão de criar modpack
         create_button = QPushButton('Criar Modpack')
         create_button.clicked.connect(self.create_modpack)
-        layout.addWidget(create_button, 5, 0, 1, 2, alignment=Qt.AlignmentFlag.AlignCenter)
-    
+        layout.addWidget(create_button, 5, 0, 1, 2)
+        
+        # Adicionar botão de criar modpack
+        connect_button = QPushButton('Conectar Modpack')
+        connect_button.clicked.connect(self.create_remote_modpack)
+        layout.addWidget(connect_button, 5, 2, 1, 2)
+        
         # Adicione os botões
         self.play_button = QPushButton('JOGAR')
         self.edit_button = QPushButton('EDITAR')
