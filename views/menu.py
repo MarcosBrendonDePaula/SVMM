@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import shutil
 import sys
 import os
 from PyQt6.QtWidgets import QApplication, QMenu ,QSystemTrayIcon, QWidget, QLabel, QGridLayout, QListWidget, QListWidgetItem, QPushButton, QLineEdit, QVBoxLayout, QDialog
@@ -24,10 +25,17 @@ class GameThread(QThread):
         self.finished.emit()
 
 class MenuView(QWidget):
+    
     def __init__(self):
         super().__init__()
+        self.create_default_modpack()
         self.init_ui()
-
+    
+    def create_default_modpack(self):
+        modpacks = Modpack.get_all_modpacks()
+        if len(modpacks) == 0:
+            Modpack("default")
+              
     def create_system_tray_icon(self, modpack):
         self.tray_icon = QSystemTrayIcon(self)
         # Carregue o ícone da modpack e defina-o como o ícone da bandeja do sistema
@@ -138,7 +146,20 @@ class MenuView(QWidget):
         self.close()
     
     def remove_modpack(self):
-        print("Botão REMOVER pressionado")
+        list_widget = self.findChild(QListWidget, "list_widget")  # Encontre o QListWidget pelo nome
+        selected_items = list_widget.selectedItems()  # Obtenha os itens selecionados
+        
+        if selected_items:
+            selected_item = selected_items[0]  # Use o primeiro item selecionado, se houver
+            modpack:Modpack = selected_item.data(Qt.ItemDataRole.UserRole)  # Obtém o objeto Modpack associado ao item
+            try:
+                shutil.rmtree(modpack.folder_path)
+                print(f"Folder '{modpack.folder_path}' and its contents have been removed recursively.")
+            except Exception as e:
+                print(f"An error occurred while removing the folder: {e}")
+            self.ListAllModpacks()
+            if list_widget.count() > 0:  # Verifica se a lista não está vazia
+                list_widget.setCurrentRow(0)  # Seleciona o primeiro item da lista
     
     def create_modpack(self):
         dialog = QDialog(self)

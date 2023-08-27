@@ -12,9 +12,6 @@ if __name__ == '__main__':
     conf = Config()
     conf.load()
     
-    #cria uma modpack padrão
-    modpack = Modpack("default")                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
-    # modpack.install_mod('teste.rar') #instala os mods ou o mod de um arquivo zip ou rar
     app = QApplication(sys.argv)
     ex = MenuView()
     sys.exit(app.exec())

@@ -1,3 +1,4 @@
+from typing import List
 import concurrent.futures, base64, os, json, shutil, uuid, secrets, re
 import threading
 
@@ -25,7 +26,7 @@ class Modpack:
         self.token   = token
         self.version = version
         
-        folder_path = os.path.join(base_directory, 'modpacks', name)
+        folder_path = os.path.join(base_directory, 'modpacks', _uuid)
         self.folder_path = folder_path
 
         self.mods_enabled_path = os.path.join(self.folder_path, 'mods_enabled')
@@ -52,7 +53,6 @@ class Modpack:
         server_host = f"{conf.get('SYNCAPI','protocol')}://{conf.get('SYNCAPI','host')}"
         self.api = ModpackApi(server_host)
         
-    
     def to_dict(self):
         """Converte a modpack em um dicionário."""
         return {
@@ -213,17 +213,6 @@ class Modpack:
         """
         # Verifique se o novo nome é diferente do atual
         if new_name != self.name:
-            # Determine o diretório base das modpacks
-            base_directory = os.path.dirname(self.folder_path)
-            print(base_directory)
-            # Calcule o novo caminho para a pasta da modpack
-            new_folder_path = os.path.join(base_directory, new_name)
-            print(new_folder_path )
-            # Renomeie a pasta da modpack
-            os.rename(self.folder_path, new_folder_path)
-            self.folder_path = new_folder_path
-
-            # Atualize o nome da modpack
             self.name = new_name
             self.save()
     
@@ -331,8 +320,6 @@ class Modpack:
             
         return True
 
-
-
     def sync(self):
         info = self.api.get_modpack_info(self._uuid)
         # se a modpack não existir crie ela no servidor
@@ -350,7 +337,6 @@ class Modpack:
         folder = Path(self.folder_path)
         
         def _upload_file(mod_file:Path):
-            print(mod_file)
             if mod_file.is_file():
                 with open(mod_file, 'rb') as file:
                     relative_path = mod_file.relative_to(self.folder_path)
@@ -380,22 +366,34 @@ class Modpack:
         for key in hashmap_remoto:
             file_path = key.replace('/', os.path.sep)
             local_file_path = Path(self.folder_path) / file_path
-            if not local_file_path.exists():
+            if local_file_path.exists() == False:
                 delete_files.add(local_file_path)
         
         max_connections = 20
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_connections) as executor:
-            futures = [executor.submit(_upload_file, mod_file) for mod_file in upload_files]
-            futures += [executor.submit(_delete_remote_file, mod_file) for mod_file in delete_files]
+            # Criação de futures para as remoções
+            delete_futures = [executor.submit(_delete_remote_file, mod_file) for mod_file in delete_files]
 
-            total_files = len(upload_files) + len(delete_files)
-            with tqdm(total=total_files, desc="Uploading and Deleting files") as pbar:
-                for future in concurrent.futures.as_completed(futures):
+            # Cria uma barra de progresso para as remoções
+            with tqdm(total=len(delete_futures), desc="Deleting files") as delete_pbar:
+                for future in concurrent.futures.as_completed(delete_futures):
                     res = future.result()
                     if res is not None:
                         # Handle the result if needed
                         pass
-                    pbar.update(1)  # Atualiza a barra de progresso a cada arquivo concluído
+                    delete_pbar.update(1)  # Atualiza a barra de progresso a cada arquivo concluído
+
+            # Criação de futures para os envios
+            upload_futures = [executor.submit(_upload_file, mod_file) for mod_file in upload_files]
+
+            # Cria uma barra de progresso para os envios
+            with tqdm(total=len(upload_futures), desc="Uploading files") as upload_pbar:
+                for future in concurrent.futures.as_completed(upload_futures):
+                    res = future.result()
+                    if res is not None:
+                        # Handle the result if needed
+                        pass
+                    upload_pbar.update(1)  # Atualiza a barra de progresso a cada arquivo concluído
 
     def update_modpack(self):
         res = self.api.get_modpack_hash_map(self._uuid)
@@ -475,7 +473,7 @@ class Modpack:
                     pbar.update(1)
             
     @classmethod
-    def load_from_json(cls, name, base_directory=""):
+    def load_from_json(cls, dir_name, base_directory=""):
         """
         Carrega uma modpack a partir de um arquivo JSON no diretório.
 
@@ -486,7 +484,7 @@ class Modpack:
         Returns:
             Modpack: Instância da classe Modpack com os dados carregados.
         """
-        json_filename = os.path.join(base_directory, 'modpacks', name, 'modpack.json')
+        json_filename = os.path.join(base_directory, 'modpacks', dir_name, 'modpack.json')
         if os.path.exists(json_filename):
             modpack_data = JasonAutoFix.load(json_filename)
             if not "uuid" in modpack_data:
@@ -495,12 +493,12 @@ class Modpack:
                 modpack_data['token'] = ""
             if not "version" in modpack_data:
                 modpack_data['version'] = "0.0.0"
-            modpack = cls(name, modpack_data['image'], modpack_data['uuid'], modpack_data['token'], modpack_data['version'], base_directory=base_directory)
+            modpack = cls(modpack_data['name'], modpack_data['image'], modpack_data['uuid'], modpack_data['token'], modpack_data['version'], base_directory=base_directory)
             return modpack
         return None  # Retorna None se o arquivo JSON não existir
     
     @staticmethod
-    def get_all_modpacks(base_directory=""):
+    def get_all_modpacks(base_directory="")->List['Modpack']:
         """
         Carrega todas as modpacks já criadas a partir dos arquivos JSON.
 
@@ -521,7 +519,7 @@ class Modpack:
         return modpacks
 
     @staticmethod
-    def list_modpacks(base_directory=""):
+    def list_modpacks(base_directory="")->List[str]:
         """
         Lista os nomes de todas as modpacks válidas existentes.
 
