@@ -192,8 +192,8 @@ class MenuView(QWidget):
             conf = Config()
             server_host = f"{conf.get('SYNCAPI','protocol')}://{conf.get('SYNCAPI','host')}"
             api = ModpackApi(server_host)
-            
             resp = api.get_modpack_info(uuid)
+            print(resp)
             if resp['status'] == 200:
                 modpack = Modpack(resp['json']['name'])
                 # Create the path for modpack.json in the modpack folder

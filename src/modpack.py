@@ -8,7 +8,7 @@ import secrets
 import tempfile
 import re
 from pyunpack import Archive
-
+import concurrent.futures
 from src.mod import Mod
 from src.config import Config
 from src.tools import JasonAutoFix,HashMap,ModpackApi,Extractor
@@ -399,8 +399,7 @@ class Modpack:
     
     def download_hash_files(self, hash_json):
         modpack_json_token = None
-        
-        # Check if modpack.json exists in the folder and store the token
+
         modpack_json_path = Path(self.folder_path) / "modpack.json"
         if modpack_json_path.exists():
             with modpack_json_path.open("r") as json_file:
@@ -408,25 +407,22 @@ class Modpack:
                 modpack_json_token = modpack_data.get("token")
                 print("Found existing modpack.json with token:", modpack_json_token)
 
-        for file_path, file_hash in hash_json.items():
+        def download_file(file_path):
             if file_path.lower().find("desktop.ini") > -1:
                 print(f"Ignoring {file_path}...")
-                continue
-            
+                return
+
             res = self.api.download_modpack_file(self._uuid, file_path)
             if res['status'] == 200:
                 content = res['content']
                 local_file_path = Path(self.folder_path) / file_path.replace("/", os.path.sep)
-
-                # Ensure the parent directory exists
                 local_file_path.parent.mkdir(parents=True, exist_ok=True)
 
-                print(f"Saving {file_path}...")
+                # print(f"Saving {file_path}...")
                 with local_file_path.open('wb') as local_file:
                     local_file.write(content)
-                print(f"Saved {file_path} successfully.")
-                
-                # Check if modpack.json is being downloaded
+                # print(f"Saved {file_path} successfully.")
+
                 if file_path.lower() == "modpack.json":
                     with local_file_path.open("r") as json_file:
                         modpack_data = json.load(json_file)
@@ -437,7 +433,16 @@ class Modpack:
                             modpack_data["token"] = modpack_json_token
                             json.dump(modpack_data, json_file, indent=4)
                         print("Replaced token in modpack.json")
-    
+
+        max_connections = 20
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_connections) as executor:
+            futures = [executor.submit(download_file, file_path) for file_path in hash_json.keys()]
+
+            with tqdm(total=len(hash_json), desc="Downloading files") as pbar:
+                for future in concurrent.futures.as_completed(futures):
+                    future.result()
+                    pbar.update(1)
+
     @classmethod
     def load_from_json(cls, name, base_directory=""):
         """
@@ -451,9 +456,7 @@ class Modpack:
             Modpack: Instância da classe Modpack com os dados carregados.
         """
         json_filename = os.path.join(base_directory, 'modpacks', name, 'modpack.json')
-        
         if os.path.exists(json_filename):
-
             modpack_data = JasonAutoFix.load(json_filename)
             if not "uuid" in modpack_data:
                 modpack_data['uuid'] = ""
