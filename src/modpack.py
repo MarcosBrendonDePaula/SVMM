@@ -388,9 +388,10 @@ class Modpack:
                     pbar.update(1)  # Atualiza a barra de progresso a cada arquivo concluído
     
     def updateMyModpack(self):
-        # local_hash = HashMap(self.folder_path, True)
+        local_hash = HashMap(self.folder_path, True)
         # temp_hash = HashMap(self.folder_path, True)
         res = self.api.get_modpack_hash_map(self._uuid)
+        print(res,self._uuid)
         if res['status'] == 200:
             # temp_hash.load_from_json(res['json'])
             # print(local_hash.compare(temp_hash))
