@@ -92,9 +92,9 @@ class ModpackConfigWindow(QDialog):
         SYNC_button.clicked.connect(self.sync_modpack)
         modpack_edit_layout.addWidget(SYNC_button)
         
-        UPDATE_button = QPushButton('DOWNLOAD')
-        UPDATE_button.clicked.connect(self.update_modpack)
-        modpack_edit_layout.addWidget(UPDATE_button)
+        self.UPDATE_button = QPushButton('DOWNLOAD')
+        self.UPDATE_button.clicked.connect(self.update_modpack)
+        modpack_edit_layout.addWidget(self.UPDATE_button)
 
         install_mod_button = QPushButton('Instalar Mod')
         install_mod_button.clicked.connect(self.install_mod)
@@ -118,12 +118,31 @@ class ModpackConfigWindow(QDialog):
         self.setLayout(layout)
         self.setWindowTitle("Modpack Editor")
     
+    def downloadEvent(self,params):
+        try:
+            if params['download-init']:
+                self.UPDATE_button.setText("Downloading...")
+                pass
+            if params['download-status']:
+                self.UPDATE_button.setText(f"DL: {params['progress']}")
+                pass
+            if params['download-fn']:
+                self.UPDATE_button.setText("DOWNLOAD")
+                self.update_mods_list()
+                pass
+        except:
+            self.UPDATE_button.setText("DOWNLOAD")
+            self.update_mods_list()
+            pass
+    
     def sync_modpack(self):
         self.modpack.sync()
         pass
     
     def update_modpack(self):
-        self.modpack.updateMyModpack()
+        # print(self.modpack.download_signal)
+        # self.modpack.download_signal.connect(self.downloadEvent)
+        self.modpack.update_modpack()
         pass
     
     def item_double_clicked(self, item):

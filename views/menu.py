@@ -48,7 +48,7 @@ class MenuView(QWidget):
         self.tray_icon.show()
 
     def ListAllModpacks(self):
-        modpacks = Modpack.get_all_modpacks()
+        modpacks = Modpack.get_all_modpacks(os.getcwd())
         list_widget = self.findChild(QListWidget, "list_widget")  # Encontre o QListWidget pelo nome
         list_widget.clear()
         list_widget.itemSelectionChanged.connect(self.on_item_selected)
@@ -71,8 +71,8 @@ class MenuView(QWidget):
         
         if selected_items:
             selected_item = selected_items[0]  # Use o primeiro item selecionado, se houver
-            modpack = selected_item.data(Qt.ItemDataRole.UserRole)  # Obtém o objeto Modpack associado ao item
-        
+            modpack:Modpack = selected_item.data(Qt.ItemDataRole.UserRole)  # Obtém o objeto Modpack associado ao item
+            
             icon_pixmap = Converter.base64_to_QPixmap(modpack.image)  # Converte a base64 em QPixmap
             icon_pixmap_resized = icon_pixmap.scaledToHeight(128)  # Redimensione para 128 pixels de altura (ajuste conforme necessário)
             self.icon_label.setPixmap(icon_pixmap_resized)
@@ -193,7 +193,6 @@ class MenuView(QWidget):
             server_host = f"{conf.get('SYNCAPI','protocol')}://{conf.get('SYNCAPI','host')}"
             api = ModpackApi(server_host)
             resp = api.get_modpack_info(uuid)
-            print(resp)
             if resp['status'] == 200:
                 modpack = Modpack(resp['json']['name'])
                 # Create the path for modpack.json in the modpack folder

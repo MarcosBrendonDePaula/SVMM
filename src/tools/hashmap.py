@@ -10,6 +10,16 @@ def count_files(directory):
         count += len(files)
     return count
 
+def calculate_file_hash(self, file_path):
+    block_size = 65536  # 64 KB blocks
+    hasher = hashlib.sha256()
+
+    with file_path.open('rb') as file:
+        for block in iter(lambda: file.read(block_size), b''):
+            hasher.update(block)
+
+    return hasher.hexdigest()
+
 class HashMap:
     """
     Classe para criar e comparar mapas de hashes de arquivos e diretórios.
@@ -35,8 +45,9 @@ class HashMap:
         else:
             self.hashmap = self.create_hashmap()
             self.save_to_file(self.hashmap_file_path)
-
-    def hash_file(self, file_path):
+    
+    @staticmethod
+    def hash_file(file_path):
         """
         Calcula o hash MD5 de um arquivo.
 
@@ -74,7 +85,7 @@ class HashMap:
         """
         files = [os.path.join(dir_path, file) for file in os.listdir(dir_path)]
         files.sort()  # Ordenar os arquivos para garantir consistência
-        files_hash = self.hash_files(files)
+        files_hash = HashMap.hash_files(files)
         combined_hash = dir_hash + files_hash
         return hashlib.md5(combined_hash.encode()).hexdigest()
 
@@ -88,7 +99,7 @@ class HashMap:
         for root, dirs, files in os.walk(self.directory):
             for file in files:
                 file_path = os.path.join(root, file)
-                file_hash = self.hash_file(file_path)
+                file_hash = HashMap.hash_file(file_path)
                 relative_path = os.path.relpath(file_path, self.directory).replace("\\", "/")
                 hashmap[relative_path] = file_hash
                 progress_bar.update(1)

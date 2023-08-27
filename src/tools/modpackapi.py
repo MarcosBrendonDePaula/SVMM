@@ -1,5 +1,6 @@
 import requests
 from src.config import Config
+from src.tools import JasonAutoFix
 class ModpackApi:
     """
     Uma classe que oferece métodos para interagir com uma API de modpacks.
@@ -79,7 +80,7 @@ class ModpackApi:
         except:
             json = {}
         return {'status': response.status_code, 'json': json, 'response': response}
-
+    
     def get_modpack_info(self, uuid):
         """
         Obtém informações sobre uma modpack com base no UUID.
@@ -117,6 +118,30 @@ class ModpackApi:
             return {'status': response.status_code , 'content':response.content, 'response':response}
         else:
             return {'status': response.status_code , 'content':None, 'response':response}
+        
+    def remove_modpack_file(self, uuid, file_path):
+        """
+        Remove um arquivo da pasta da modpack.
+
+        :param uuid: O UUID da modpack.
+        :param file_path: O caminho do arquivo a ser removido.
+        :return: Um dicionário contendo a resposta da API.
+        """
+        url = f"{self.base_url}/removeModpackFile/{uuid}/{file_path}"
+        response = requests.delete(url)
+        return {'status': response.status_code, 'json': response.json(), 'response': response}
+
+    def delete_modpack(self, uuid):
+        """
+        Remove completamente uma modpack, incluindo todos os arquivos e pastas.
+
+        :param uuid: O UUID da modpack.
+        :return: Um dicionário contendo a resposta da API.
+        """
+        url = f"{self.base_url}/removeModpack/{uuid}"
+        response = requests.delete(url)
+        return {'status': response.status_code, 'json': response.json(), 'response': response}
+
 
 # Exemplo de uso da classe ModpackApi
 if __name__ == "__main__":
