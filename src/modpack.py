@@ -361,6 +361,7 @@ class Modpack:
     #                 res = self.api.upload_file(self._uuid, self.token, str(relative_path).replace('\\','/'), file)  
     def send_all_files(self):
         import concurrent.futures
+        HashMap(self.folder_path)
         info = self.api.get_modpack_info(self._uuid)
         folder = Path(self.folder_path)
         
@@ -388,7 +389,7 @@ class Modpack:
                     pbar.update(1)  # Atualiza a barra de progresso a cada arquivo concluído
     
     def updateMyModpack(self):
-        local_hash = HashMap(self.folder_path, True)
+        #HashMap(self.folder_path)
         # temp_hash = HashMap(self.folder_path, True)
         res = self.api.get_modpack_hash_map(self._uuid)
         print(res,self._uuid)
