@@ -53,6 +53,32 @@ class ModpackApi:
         except:
             json = {}
         return {'status': response.status_code, 'json': json, 'response': response}
+    
+    
+    def upload_modpack_zip(self, uuid, token, zip_file_path):
+        """
+        Faz upload de um arquivo ZIP para a pasta da modpack e realiza a descompactação.
+        
+        :param uuid: O UUID da modpack.
+        :param token: O token de autenticação.
+        :param zip_file_path: O caminho para o arquivo ZIP a ser enviado.
+        :return: Um dicionário contendo a resposta da API.
+        """
+        # Constrói a URL de upload com base no UUID
+        url = f"{self.base_url}/uploadAndUnzip/{uuid}"
+        # Define os cabeçalhos da requisição
+        headers = {"token": f"{token}"}
+        # Lê o conteúdo do arquivo ZIP
+        with open(zip_file_path, "rb") as zip_file:
+            # Cria um dicionário de arquivos para enviar na requisição
+            files = {"file": zip_file}
+            # Envia a requisição POST para a API de upload e descompactação
+            response = requests.post(url, files=files, headers=headers)
+        try:
+            json = response.json()
+        except:
+            json = {}
+        return {'status': response.status_code, 'json': json, 'response': response}
 
     def get_modpack_info(self, uuid):
         """

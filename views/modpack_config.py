@@ -8,9 +8,9 @@ from PyQt6.QtGui import QPixmap, QImage, QImageReader, QColor, QBrush, QCursor, 
 from PyQt6.QtCore import Qt, QSize
 
 from src.tools import (Converter,Extractor,JasonAutoFix)
-
+from src.modpack import Modpack
 class ModpackConfigWindow(QDialog):
-    def __init__(self, modpack):
+    def __init__(self, modpack:Modpack):
         super().__init__()
         self.modpack = modpack
         self.initUi()

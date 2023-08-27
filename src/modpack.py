@@ -12,7 +12,7 @@ from pyunpack import Archive
 from src.mod import Mod
 from src.config import Config
 from src.tools import JasonAutoFix,HashMap,ModpackApi,Extractor
-
+from tqdm import tqdm
 class Modpack:
     """Classe para representar e gerenciar modpacks do jogo."""
 
@@ -350,15 +350,42 @@ class Modpack:
         else:
             self.send_all_files()
     
+    # def send_all_files(self):
+    #     info = self.api.get_modpack_info(self._uuid)
+    #     folder = Path(self.folder_path)
+    #     HashMap(self.folder_path)
+    #     for mod_file in folder.glob('**/*'):
+    #         if mod_file.is_file():
+    #             with open(mod_file, 'rb') as file:
+    #                 relative_path = mod_file.relative_to(folder)
+    #                 res = self.api.upload_file(self._uuid, self.token, str(relative_path).replace('\\','/'), file)  
     def send_all_files(self):
+        import concurrent.futures
         info = self.api.get_modpack_info(self._uuid)
         folder = Path(self.folder_path)
-        HashMap(self.folder_path)
-        for mod_file in folder.glob('**/*'):
+        
+        # Contando o total de arquivos para a barra de progresso
+        total_files = len(list(folder.glob('**/*')))
+        
+        def upload_file(mod_file):
             if mod_file.is_file():
                 with open(mod_file, 'rb') as file:
                     relative_path = mod_file.relative_to(folder)
-                    res = self.api.upload_file(self._uuid, self.token, str(relative_path).replace('\\','/'), file)  
+                    return self.api.upload_file(self._uuid, self.token, str(relative_path).replace('\\', '/'), file)
+            return None
+        
+        max_connections = 20
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_connections) as executor:
+            futures = [executor.submit(upload_file, mod_file) for mod_file in folder.glob('**/*')]
+            
+            # Criação da barra de progresso
+            with tqdm(total=total_files, desc="Uploading files") as pbar:
+                for future in concurrent.futures.as_completed(futures):
+                    res = future.result()
+                    if res is not None:
+                        # Handle the result if needed
+                        pass
+                    pbar.update(1)  # Atualiza a barra de progresso a cada arquivo concluído
     
     def updateMyModpack(self):
         # local_hash = HashMap(self.folder_path, True)
