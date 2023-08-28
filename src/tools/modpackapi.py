@@ -142,6 +142,25 @@ class ModpackApi:
         response = requests.delete(url)
         return {'status': response.status_code, 'json': response.json(), 'response': response}
 
+    def is_owner(self, uuid, token):
+        """
+        Verifica se um token é do dono da modpack com o UUID fornecido.
+        
+        :param uuid: O UUID da modpack.
+        :param token: O token de autenticação.
+        :return: True se o token corresponder ao dono da modpack, False caso contrário ou em caso de erro.
+        """
+        url = f"{self.base_url}/isOwner/{uuid}"
+        try:
+            response = requests.post(url, json={"token": token})
+            if response.json()['code'] == -1:
+                return True
+            if response.status_code == 200:
+                return True
+            else:
+                return False
+        except:
+            return False
 
 # Exemplo de uso da classe ModpackApi
 if __name__ == "__main__":

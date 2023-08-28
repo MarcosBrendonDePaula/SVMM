@@ -9,6 +9,7 @@ from PyQt6.QtCore import Qt, QSize
 
 from src.tools import (Converter,Extractor,JasonAutoFix)
 from src.modpack import Modpack
+
 class ModpackConfigWindow(QDialog):
     def __init__(self, modpack:Modpack):
         super().__init__()
@@ -88,10 +89,14 @@ class ModpackConfigWindow(QDialog):
         # select_image_button.clicked.connect(self.select_image)
         # modpack_edit_layout.addWidget(select_image_button)
         
+        
         SYNC_button = QPushButton('UPLOAD')
         SYNC_button.clicked.connect(self.sync_modpack)
-        modpack_edit_layout.addWidget(SYNC_button)
         
+        if self.modpack.is_owner:
+            modpack_edit_layout.addWidget(SYNC_button)
+            
+                        
         self.UPDATE_button = QPushButton('DOWNLOAD')
         self.UPDATE_button.clicked.connect(self.update_modpack)
         modpack_edit_layout.addWidget(self.UPDATE_button)

@@ -52,6 +52,7 @@ class Modpack:
         conf = Config()
         server_host = f"{conf.get('SYNCAPI','protocol')}://{conf.get('SYNCAPI','host')}"
         self.api = ModpackApi(server_host)
+        self.is_owner = self.api.is_owner(self._uuid,self.token)
         
     def to_dict(self):
         """Converte a modpack em um dicionário."""

@@ -157,6 +157,7 @@ class MenuView(QWidget):
                 print(f"Folder '{modpack.folder_path}' and its contents have been removed recursively.")
             except Exception as e:
                 print(f"An error occurred while removing the folder: {e}")
+                
             self.ListAllModpacks()
             if list_widget.count() > 0:  # Verifica se a lista não está vazia
                 list_widget.setCurrentRow(0)  # Seleciona o primeiro item da lista
@@ -214,16 +215,17 @@ class MenuView(QWidget):
             server_host = f"{conf.get('SYNCAPI','protocol')}://{conf.get('SYNCAPI','host')}"
             api = ModpackApi(server_host)
             resp = api.get_modpack_info(uuid)
+            print(resp)
             if resp['status'] == 200:
-                modpack = Modpack(resp['json']['name'])
+                modpack = Modpack(resp['json']['name'], _uuid=resp['json']['uuid'])
                 # Create the path for modpack.json in the modpack folder
                 modpack_json_path = Path(modpack.folder_path) / "modpack.json"
                 # Write the JSON content to modpack.json
                 with modpack_json_path.open('w') as json_file:
                     json.dump(resp['json'], json_file, indent=4)
-                    self.ListAllModpacks()
                     dialog.close()
-    
+                self.ListAllModpacks()
+                    
     def init_ui(self):
         layout = QGridLayout()
         self.info_layout = QGridLayout()
