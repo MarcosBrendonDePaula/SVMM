@@ -402,7 +402,9 @@ class Modpack:
             thread = threading.Thread(target=self.download_files, args=(res['json'],))
             thread.start()
     
-    def download_files(self, hash_json):
+    def download_files(self, hash_json: dict):
+        dictRemoto = hash_json
+        dictLocal = HashMap(self.folder_path, True).hashmap
         modpack_json_token = None
         modpack_json_path = Path(self.folder_path) / "modpack.json"
 
@@ -413,7 +415,7 @@ class Modpack:
                 print("Found existing modpack.json with token:", modpack_json_token)
 
         def download_file(file_path):
-            if file_path.lower().find("desktop.ini") > -1:
+            if file_path.lower().endswith("desktop.ini"):
                 print(f"Ignoring {file_path}...")
                 return
 
@@ -439,10 +441,31 @@ class Modpack:
 
         max_connections = 20
         download_tasks = []
+        local_hash_map = HashMap(self.folder_path).hashmap
+        
+        for file_path in local_hash_map.keys():
+            if file_path.lower() == "modpack.json":
+                continue
+            full_path = Path(self.folder_path) / file_path
+            if file_path not in dictRemoto or dictRemoto.get(file_path) != HashMap.hash_file(Path(full_path)):
+                Path(full_path).unlink()
+
+
+        for root, dirs, files in os.walk(self.folder_path, topdown=False):
+            for dir_name in dirs:
+                dir_path = os.path.join(root, dir_name)
+                if not os.listdir(dir_path):  # Check if directory is empty
+                    os.rmdir(dir_path)
+        
+        folder = Path(self.folder_path) / "mods_enabled"
+        folder.mkdir(parents=True, exist_ok=True)
+        
+        folder = Path(self.folder_path) / "mods_disabled"
+        folder.mkdir(parents=True, exist_ok=True)
 
         # Verifique quais arquivos precisam ser baixados ou removidos localmente
         for file_path in hash_json.keys():
-            if file_path.lower().find("desktop.ini") > -1:
+            if file_path.lower().endswith("desktop.ini"):
                 continue
             local_file_path = Path(self.folder_path) / file_path.replace("/", os.path.sep)
             try:
@@ -459,9 +482,10 @@ class Modpack:
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_connections) as executor:
             futures = [executor.submit(download_file, file_path) for file_path in download_tasks]
+            
             completed_tasks = 0
             total_tasks = len(download_tasks)
-
+            
             with tqdm(total=len(download_tasks), desc="Downloading files") as pbar:
                 for future in concurrent.futures.as_completed(futures):
                     future.result()
