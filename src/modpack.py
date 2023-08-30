@@ -113,11 +113,14 @@ class Modpack:
         Args:
             mod_name (str): Nome do mod a ser desabilitado.
         """
-        source_path = os.path.join(self.mods_enabled_path, mod_name)
-        destination_path = os.path.join(self.mods_disabled_path, mod_name)
-        if os.path.exists(source_path):
-            os.rename(source_path, destination_path)
-            self.save()
+        try:
+            source_path = os.path.join(self.mods_enabled_path, mod_name)
+            destination_path = os.path.join(self.mods_disabled_path, mod_name)
+            if os.path.exists(source_path):
+                os.rename(source_path, destination_path)
+                self.save()
+        except:
+            return "FUDEO"
 
     def enable_mods(self, mods_to_enable):
         """
@@ -288,14 +291,15 @@ class Modpack:
         return installed_mods
     #auto instalador de mods zip e rar --------------------------
     
-    def mod_dependencies_complete(self, mod):
-        """
-        Verifica se as dependências do mod estão completas na lista de mods da modpack.
+    def mod_dependencies_complete(self, mod: Mod):
+        """Verifica se as dependências do mod estão completas na lista de mods da modpack.
 
-        Args:
+        Parameters
+        ----------
             mod (Mod): O objeto Mod cujas dependências devem ser verificadas.
 
-        Returns:
+        Returns
+        -------
             bool: True se todas as dependências estiverem completas, False caso contrário.
         """
         mods_enabled = self.get_enabled_mods()
@@ -322,6 +326,8 @@ class Modpack:
         return True
 
     def sync(self):
+        """Mateus documentar**
+        """
         info = self.api.get_modpack_info(self._uuid)
         # se a modpack não existir crie ela no servidor
         if info['status'] == 404:
@@ -333,6 +339,8 @@ class Modpack:
             self.send_all_files()
     
     def send_all_files(self):
+        """Mateus documentar**
+        """
         HashMap(self.folder_path)
         info = self.api.get_modpack_info(self._uuid)
         folder = Path(self.folder_path)
