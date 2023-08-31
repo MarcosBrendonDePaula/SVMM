@@ -62,15 +62,17 @@ class MenuView(QWidget):
         list_widget.itemSelectionChanged.connect(self.on_item_selected)
         
         self.info_layout = QGridLayout()  # Inicialize o layout de informações
-        
+        self.modpacks_map = {}
+        list_widget.itemDoubleClicked.connect(self.item_double_clicked)
         for modpack in modpacks:
+            self.modpacks_map[modpack._uuid] = modpack
             item = QListWidgetItem()
-            item.setData(Qt.ItemDataRole.UserRole, modpack)  # Associe o objeto Modpack ao item da lista
+            item.setData(Qt.ItemDataRole.UserRole, modpack._uuid)  # Associe o objeto Modpack ao item da lista
             item.setText(modpack.name)  # Define o texto do item como o nome do modpack
-            
             icon_pixmap = Converter.base64_to_QPixmap(modpack.image)  # Converte a base64 em QPixmap
             icon_pixmap_resized = icon_pixmap.scaledToHeight(32)  # Redimensione para 128 pixels de altura (ajuste conforme necessário)
             item.setIcon(QIcon(icon_pixmap_resized))  # Define o ícone do item
+            item.setToolTip(i18n.t('list.open.folder'))
             list_widget.addItem(item)  # Adiciona o item à lista
 
     def on_item_selected(self):
@@ -79,7 +81,7 @@ class MenuView(QWidget):
         
         if selected_items:
             selected_item = selected_items[0]  # Use o primeiro item selecionado, se houver
-            modpack:Modpack = selected_item.data(Qt.ItemDataRole.UserRole)  # Obtém o objeto Modpack associado ao item
+            modpack:Modpack = self.modpacks_map[selected_item.data(Qt.ItemDataRole.UserRole)]  # Obtém o objeto Modpack associado ao item
             
             icon_pixmap = Converter.base64_to_QPixmap(modpack.image)  # Converte a base64 em QPixmap
             icon_pixmap_resized = icon_pixmap.scaledToHeight(128)  # Redimensione para 128 pixels de altura (ajuste conforme necessário)
@@ -92,6 +94,17 @@ class MenuView(QWidget):
             self.setWindowTitle(f"M: {modpack.name}")
             self.info_layout.update()
     
+    def item_double_clicked(self, item):
+        list_widget = self.findChild(QListWidget, "list_widget")  # Encontre o QListWidget pelo nome
+        selected_items = list_widget.selectedItems()  # Obtenha os itens selecionados
+        
+        if selected_items:
+            selected_item = selected_items[0]  # Use o primeiro item selecionado, se houver
+            modpack:Modpack = self.modpacks_map[selected_item.data(Qt.ItemDataRole.UserRole)]  # Obtém o objeto Modpack associado ao item
+            modPack_folder_path = modpack.folder_path
+            if os.path.exists(modPack_folder_path):
+                os.startfile(modPack_folder_path)  # Abre a pasta do mod no sistema
+                
     def play_modpack(self):
         list_widget = self.findChild(QListWidget, "list_widget")
         selected_items = list_widget.selectedItems()
@@ -125,8 +138,7 @@ class MenuView(QWidget):
         
         if selected_items:
             selected_item = selected_items[0]  # Use o primeiro item selecionado, se houver
-            modpack = selected_item.data(Qt.ItemDataRole.UserRole)  # Obtém o objeto Modpack associado ao item
-            
+            modpack = self.modpacks_map[selected_item.data(Qt.ItemDataRole.UserRole)]
             # Abra a janela de configuração passando o objeto Modpack
             config_window = ModpackConfigWindow(modpack)
             config_window.exec()

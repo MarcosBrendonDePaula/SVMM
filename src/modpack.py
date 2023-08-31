@@ -8,10 +8,16 @@ from src.config import Config
 from src.tools import JasonAutoFix,HashMap,ModpackApi,Extractor
 from tqdm import tqdm
 
-class Modpack:
+from PyQt6.QtCore import QObject, pyqtSignal
+
+class Modpack(QObject):
+    uploadSignal = pyqtSignal(dict)
+    downloadSignal = pyqtSignal(dict)
     """Classe para representar e gerenciar modpacks do jogo."""
+    
     def __init__(self, name, image="", _uuid="", token="", version="0.0.0", base_directory=""):
         """Inicializa uma instância da classe Modpack."""
+        super().__init__()
         f_save = False
         if _uuid == "":
             _uuid = uuid.uuid4().hex
@@ -71,7 +77,6 @@ class Modpack:
         """
         Salva os dados da modpack em um arquivo JSON no diretório da modpack.
         """
-
         modpack_data = self.to_dict()
         filename = os.path.join(self.folder_path, 'modpack.json')
 
@@ -341,6 +346,14 @@ class Modpack:
     def send_all_files(self):
         """Mateus documentar**
         """
+        
+        self.uploadSignal.emit({
+            "runing": 1,
+            "progress": 0,
+            "step" : 0,
+            "done" : False
+        })
+        
         HashMap(self.folder_path)
         info = self.api.get_modpack_info(self._uuid)
         folder = Path(self.folder_path)
@@ -354,7 +367,7 @@ class Modpack:
         
         def _delete_remote_file(mod_file:Path):
             relative_path = str(mod_file.relative_to(self.folder_path)).replace('\\', '/')
-            print(self.api.remove_modpack_file(self._uuid, relative_path))
+            self.api.remove_modpack_file(self._uuid, relative_path)
 
         hashmap_remoto = self.api.get_modpack_hash_map(self._uuid)['json']
         upload_files = set()  # Conjunto para armazenar os arquivos que precisam ser carregados
@@ -379,31 +392,73 @@ class Modpack:
                 delete_files.add(local_file_path)
         
         max_connections = 20
+        total_files = len(upload_files)
+        total_exclusions = len(delete_files)
+        processed = 0
+        all_tasks = total_files + total_exclusions
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_connections) as executor:
             # Criação de futures para as remoções
             delete_futures = [executor.submit(_delete_remote_file, mod_file) for mod_file in delete_files]
 
+            self.uploadSignal.emit({
+                "runing": 1,
+                "progress": 0,
+                "step" : 1,
+                "done" : False
+            })
+            
             # Cria uma barra de progresso para as remoções
-            with tqdm(total=len(delete_futures), desc="Deleting files") as delete_pbar:
+            with tqdm(total=total_exclusions, desc="Deleting files") as delete_pbar:
                 for future in concurrent.futures.as_completed(delete_futures):
                     res = future.result()
                     if res is not None:
                         # Handle the result if needed
                         pass
                     delete_pbar.update(1)  # Atualiza a barra de progresso a cada arquivo concluído
+                    processed += 1
+                    progress_percent = (processed / all_tasks) * 100
+                    self.uploadSignal.emit({
+                        "runing": 1,
+                        "progress": progress_percent,
+                        "step": 1,
+                        "done": False
+                    })
 
             # Criação de futures para os envios
             upload_futures = [executor.submit(_upload_file, mod_file) for mod_file in upload_files]
-
+            
+            self.uploadSignal.emit({
+                "runing": 1,
+                "progress": 0,
+                "step" : 2,
+                "done" : False
+            })
+            
             # Cria uma barra de progresso para os envios
-            with tqdm(total=len(upload_futures), desc="Uploading files") as upload_pbar:
+            with tqdm(total=total_files, desc="Uploading files") as upload_pbar:
                 for future in concurrent.futures.as_completed(upload_futures):
                     res = future.result()
                     if res is not None:
                         # Handle the result if needed
                         pass
+                    processed += 1
                     upload_pbar.update(1)  # Atualiza a barra de progresso a cada arquivo concluído
+                    
+                    progress_percent = (processed / all_tasks) * 100
+                    self.uploadSignal.emit({
+                        "runing": 1,
+                        "progress": progress_percent,
+                        "step": 2,
+                        "done": False
+                    })
 
+        self.uploadSignal.emit({
+            "runing": 0,
+            "progress": 100,
+            "step" : None,
+            "done" : True
+        })
+        
     def update_modpack(self):
         res = self.api.get_modpack_hash_map(self._uuid)
         if res['status'] == 200:
@@ -411,6 +466,13 @@ class Modpack:
             thread.start()
     
     def download_files(self, hash_json: dict):
+        self.uploadSignal.emit({
+            "runing": 1,
+            "progress": 0,
+            "step" : 0,
+            "done" : False
+        })
+        
         dictRemoto = hash_json
         dictLocal = HashMap(self.folder_path, True).hashmap
         modpack_json_token = None
@@ -451,6 +513,13 @@ class Modpack:
         download_tasks = []
         local_hash_map = HashMap(self.folder_path).hashmap
         
+        self.uploadSignal.emit({
+            "runing": 1,
+            "progress": 0,
+            "step" : 1,
+            "done" : False
+        })
+        
         for file_path in local_hash_map.keys():
             if file_path.lower() == "modpack.json":
                 continue
@@ -471,7 +540,6 @@ class Modpack:
         folder = Path(self.folder_path) / "mods_disabled"
         folder.mkdir(parents=True, exist_ok=True)
 
-        # Verifique quais arquivos precisam ser baixados ou removidos localmente
         for file_path in hash_json.keys():
             if file_path.lower().endswith("desktop.ini"):
                 continue
@@ -501,9 +569,23 @@ class Modpack:
                     completed_tasks += 1
                     progress = completed_tasks / total_tasks * 100
 
+                    self.uploadSignal.emit({
+                        "runing": 1,
+                        "progress": progress,
+                        "step": 2,
+                        "done": False
+                    })
+                    
                     if completed_tasks == total_tasks:
                         finished = True
                     pbar.update(1)
+                    
+        self.uploadSignal.emit({
+            "runing": 0,
+            "progress": 100,
+            "step" : None,
+            "done" : True
+        })
             
     @classmethod
     def load_from_json(cls, dir_name, base_directory=""):

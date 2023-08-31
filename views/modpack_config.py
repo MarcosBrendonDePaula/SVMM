@@ -2,13 +2,31 @@ import os
 import base64, i18n
 from PyQt6.QtWidgets import (
     QDialog, QLabel, QLineEdit, QPushButton, QVBoxLayout, QListWidgetItem,
-    QListWidget, QHBoxLayout, QFileDialog, QMessageBox
+    QListWidget, QHBoxLayout, QFileDialog, QMessageBox, QProgressBar
 )
 from PyQt6.QtGui import QPixmap, QImage, QImageReader, QColor, QBrush, QCursor, QIcon
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt, QSize, QThread
 
+from src.mod import Mod
 from src.tools import (Converter,Extractor,JasonAutoFix)
 from src.modpack import Modpack
+
+
+class WorkerUpload(QThread):
+    def __init__(self, modpack:Modpack):
+        super().__init__()
+        self.modpack = modpack
+
+    def run(self):
+        self.modpack.sync()
+        
+class WorkerDownload(QThread):
+    def __init__(self, modpack:Modpack):
+        super().__init__()
+        self.modpack = modpack
+
+    def run(self):
+        self.modpack.update_modpack()
 
 class ModpackConfigWindow(QDialog):
     def __init__(self, modpack:Modpack):
@@ -30,6 +48,8 @@ class ModpackConfigWindow(QDialog):
 
         name_label = QLabel(i18n.t(f'mp.name'))
         self.name_edit = QLineEdit(self.modpack.name)
+        self.name_edit.textEdited.connect(self.save)
+        
         modpack_edit_layout.addWidget(name_label)
         modpack_edit_layout.addWidget(self.name_edit)
 
@@ -53,7 +73,7 @@ class ModpackConfigWindow(QDialog):
         self.change_image_button.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
         self.change_image_button.setToolTip(i18n.t(f'mp.change.image'))
-
+        
         self.change_image_button.clicked.connect(self.select_image)
 
         self.change_image_button.setStyleSheet('border: none;')
@@ -89,17 +109,18 @@ class ModpackConfigWindow(QDialog):
         # select_image_button.clicked.connect(self.select_image)
         # modpack_edit_layout.addWidget(select_image_button)
         
+        self.progress_bar = QProgressBar(self)
+        self.progress_bar.setVisible(False)
+        modpack_edit_layout.addWidget(self.progress_bar)
         
-        SYNC_button = QPushButton(i18n.t(f'mp.btn.upload'))
-        SYNC_button.clicked.connect(self.sync_modpack)
+        self.send_button = QPushButton(i18n.t(f'mp.btn.upload'))
+        self.send_button.clicked.connect(self.upload_modpack)
         
         if self.modpack.is_owner:
-            modpack_edit_layout.addWidget(SYNC_button)
-            
-                        
-        self.UPDATE_button = QPushButton(i18n.t(f'mp.btn.download'))
-        self.UPDATE_button.clicked.connect(self.update_modpack)
-        modpack_edit_layout.addWidget(self.UPDATE_button)
+            modpack_edit_layout.addWidget(self.send_button) 
+        self.download_button = QPushButton(i18n.t(f'mp.btn.download'))
+        self.download_button.clicked.connect(self.download_modpack)
+        modpack_edit_layout.addWidget(self.download_button)
 
         install_mod_button = QPushButton(i18n.t(f'mp.btn.mod.install'))
         install_mod_button.clicked.connect(self.install_mod)
@@ -115,39 +136,57 @@ class ModpackConfigWindow(QDialog):
         enable_all_button.clicked.connect(self.disable_all_mods)
         modpack_edit_layout.addWidget(enable_all_button)
         
-        confirm_button = QPushButton(i18n.t(f'mp.btn.mod.save'))
-        confirm_button.clicked.connect(self.confirm_changes)
-        modpack_edit_layout.addWidget(confirm_button)
+        # Agora as informações salvam ao serem mudadas.
+        # confirm_button = QPushButton(i18n.t(f'mp.btn.mod.save'))
+        # confirm_button.clicked.connect(self.confirm_changes)
+        # modpack_edit_layout.addWidget(confirm_button)
         
         layout.addLayout(modpack_edit_layout)
         self.setLayout(layout)
         self.setWindowTitle("Modpack Editor")
     
-    def downloadEvent(self,params):
-        try:
-            if params['download-init']:
-                self.UPDATE_button.setText("Downloading...")
-                pass
-            if params['download-status']:
-                self.UPDATE_button.setText(f"DL: {params['progress']}")
-                pass
-            if params['download-fn']:
-                self.UPDATE_button.setText("DOWNLOAD")
-                self.update_mods_list()
-                pass
-        except:
-            self.UPDATE_button.setText("DOWNLOAD")
-            self.update_mods_list()
-            pass
+    def save(self):
+        self.modpack.image = self.image or self.modpack.image 
+        self.modpack.name = self.name_edit.text()
+        self.modpack.save()
     
-    def sync_modpack(self):
-        self.modpack.sync()
+    def update_progress(self, args:dict):
+        if args['step'] == 0:
+            self.send_button.setText(i18n.t('mp.btn.event.mapping'))
+            self.send_button.setDisabled(True)
+        elif args['step'] == 1:
+            self.send_button.setText(i18n.t('mp.btn.event.uploading'))
+        self.progress_bar.setValue(int(round(args['progress'])))
         pass
+        if args['done']:
+            self.send_button.setDisabled(False)
+            self.progress_bar.setVisible(False)
+            self.send_button.setText(i18n.t(f'mp.btn.upload'))
     
-    def update_modpack(self):
-        # print(self.modpack.download_signal)
-        # self.modpack.download_signal.connect(self.downloadEvent)
-        self.modpack.update_modpack()
+    def download_progress(self, args:dict):
+        if args['step'] == 0:
+            self.download_button.setText(i18n.t('mp.btn.event.mapping'))
+            self.download_button.setDisabled(True)
+        elif args['step'] == 1:
+            self.download_button.setText(i18n.t('mp.btn.event.downloading'))
+        self.progress_bar.setValue(int(round(args['progress'])))
+        pass
+        if args['done']:
+            self.download_button.setDisabled(False)
+            self.progress_bar.setVisible(False)
+            self.download_button.setText(i18n.t(f'mp.btn.download'))
+    
+    def upload_modpack(self):
+        self.modpack.uploadSignal.connect(self.update_progress)
+        self.worker = WorkerUpload(self.modpack)
+        self.worker.start()
+        self.progress_bar.setVisible(True)
+    
+    def download_modpack(self):
+        self.modpack.uploadSignal.connect(self.download_progress)
+        self.worker = WorkerDownload(self.modpack)
+        self.worker.start()
+        self.progress_bar.setVisible(True)
         pass
     
     def item_double_clicked(self, item):
@@ -157,6 +196,13 @@ class ModpackConfigWindow(QDialog):
             if os.path.exists(mod_folder_path):
                 os.startfile(mod_folder_path)  # Abre a pasta do mod no sistema
     
+    def handle_mod_item_change(self, item):
+        mod_name = item.text()
+        if item.checkState() == Qt.CheckState.Checked:
+            self.modpack.enable_mod(mod_name.replace(' - Incomplete',""))
+        else:
+            self.modpack.disable_mod(mod_name.replace(' - Incomplete',""))
+    
     def update_mods_list(self):
         all_mods = sorted(self.modpack.get_enabled_mods() + self.modpack.get_disabled_mods(), key=lambda mod: mod.name)
         self.mods_list_widget.clear()
@@ -165,7 +211,7 @@ class ModpackConfigWindow(QDialog):
             item = QListWidgetItem(mod.parent_folder_name)
             item.setData(Qt.ItemDataRole.UserRole, mod)
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-            
+
             if mod.parent_folder_name in self.modpack.list_enabled_mods():
                 item.setCheckState(Qt.CheckState.Checked)
                 dependencies_complete = self.modpack.mod_dependencies_complete(mod)
@@ -179,6 +225,7 @@ class ModpackConfigWindow(QDialog):
             else:
                 item.setCheckState(Qt.CheckState.Unchecked)
             self.mods_list_widget.addItem(item)
+            self.mods_list_widget.itemChanged.connect(self.handle_mod_item_change)
 
     def select_image(self):
         image_path, _ = QFileDialog.getOpenFileName(self, "Selecionar Imagem", "", "Images (*.png *.jpg *.jpeg);;All Files (*)")
@@ -205,6 +252,7 @@ class ModpackConfigWindow(QDialog):
                     desired_height = 200
                     pixmap_resized = pixmap.scaled(desired_width, desired_height, Qt.AspectRatioMode.KeepAspectRatio)
                     self.image_preview.setPixmap(pixmap_resized)
+                    self.save()
             else:
                 # Imagem inválida, exiba uma mensagem de erro
                 QMessageBox.critical(self, "Erro", "A imagem selecionada não é válida.")

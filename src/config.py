@@ -45,19 +45,21 @@ class Config:
         else:
             self.set_default_console()
             self.set_default_game()
+            self.set_default_svmg()
             self.save()  # Cria o arquivo com as configurações padrão
         
         lang = self.get('SVMG', 'lang')
         i18n.config.set('locale', lang)
         i18n.set('filename_format', '{format}')
         i18n.resource_loader.load_translation_file(f"{lang}.json",(Path('resources') / "i18n"), lang)
-        
+    
+    def set_default_svmg(self):
+        self.set('SVMG', 'lang', 'en')
+    
     def set_default_console(self):
         self.set('CONSOLE', 'loglevel', 'INFO')
 
     def set_default_game(self):
-        print(self.find_stardew_valley_installation_path())
-        self.set('SVMG', 'lang', 'en')
         self.set('GAME', 'gamepath', self.find_stardew_valley_installation_path())
         self.set('GAME', 'modsfolder', 'Mods')
         self.set('SYNCAPI', 'host', 'svmgapi.marcosbrendon.com:3000')
