@@ -1,5 +1,5 @@
 import os
-import base64
+import base64, i18n
 from PyQt6.QtWidgets import (
     QDialog, QLabel, QLineEdit, QPushButton, QVBoxLayout, QListWidgetItem,
     QListWidget, QHBoxLayout, QFileDialog, QMessageBox
@@ -28,12 +28,12 @@ class ModpackConfigWindow(QDialog):
         # Parte direita: Campos de edição da modpack
         modpack_edit_layout = QVBoxLayout()
 
-        name_label = QLabel("Nome da Modpack:")
+        name_label = QLabel(i18n.t(f'mp.name'))
         self.name_edit = QLineEdit(self.modpack.name)
         modpack_edit_layout.addWidget(name_label)
         modpack_edit_layout.addWidget(self.name_edit)
 
-        image_label = QLabel("Imagem da Modpack:")
+        image_label = QLabel(i18n.t(f'mp.image'))
         self.image_edit = QLineEdit(self.modpack.image)
         modpack_edit_layout.addWidget(image_label)
 
@@ -52,7 +52,7 @@ class ModpackConfigWindow(QDialog):
 
         self.change_image_button.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
-        self.change_image_button.setToolTip('Modificar imagem')
+        self.change_image_button.setToolTip(i18n.t(f'mp.change.image'))
 
         self.change_image_button.clicked.connect(self.select_image)
 
@@ -90,32 +90,32 @@ class ModpackConfigWindow(QDialog):
         # modpack_edit_layout.addWidget(select_image_button)
         
         
-        SYNC_button = QPushButton('UPLOAD')
+        SYNC_button = QPushButton(i18n.t(f'mp.btn.upload'))
         SYNC_button.clicked.connect(self.sync_modpack)
         
         if self.modpack.is_owner:
             modpack_edit_layout.addWidget(SYNC_button)
             
                         
-        self.UPDATE_button = QPushButton('DOWNLOAD')
+        self.UPDATE_button = QPushButton(i18n.t(f'mp.btn.download'))
         self.UPDATE_button.clicked.connect(self.update_modpack)
         modpack_edit_layout.addWidget(self.UPDATE_button)
 
-        install_mod_button = QPushButton('Instalar Mod')
+        install_mod_button = QPushButton(i18n.t(f'mp.btn.mod.install'))
         install_mod_button.clicked.connect(self.install_mod)
         modpack_edit_layout.addWidget(install_mod_button)
         
         # Habilitar todos os mods
-        enable_all_button = QPushButton('Habilitar Todos')
+        enable_all_button = QPushButton(i18n.t(f'mp.btn.mod.enable.mods'))
         enable_all_button.clicked.connect(self.enable_all_mods)
         modpack_edit_layout.addWidget(enable_all_button)
 
         # Desabilitar todos os mods
-        enable_all_button = QPushButton('Desabilitar Todos')
+        enable_all_button = QPushButton(i18n.t(f'mp.btn.mod.disable.mods'))
         enable_all_button.clicked.connect(self.disable_all_mods)
         modpack_edit_layout.addWidget(enable_all_button)
         
-        confirm_button = QPushButton('Salvar')
+        confirm_button = QPushButton(i18n.t(f'mp.btn.mod.save'))
         confirm_button.clicked.connect(self.confirm_changes)
         modpack_edit_layout.addWidget(confirm_button)
         

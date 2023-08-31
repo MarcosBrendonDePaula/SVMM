@@ -8,6 +8,8 @@ import os
 
 from views.menu import MenuView
 
+import i18n
+
 if __name__ == '__main__':
     conf = Config()
     conf.load()

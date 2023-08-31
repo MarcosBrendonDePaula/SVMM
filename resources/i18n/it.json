@@ -1,0 +1,19 @@
+{
+    "it": {
+        "btn.connect": "COLLEGA MODPACK",
+        "btn.create": "CREA MODPACK",
+        "btn.remove": "RIMUOVI",
+        "btn.play": "GIOCA",
+        "btn.edit": "MODIFICA",
+        "mp.btn.save": "SALVA",
+        "mp.btn.download": "SCARICA CAMBIAMENTI",
+        "mp.btn.upload": "CARICA CAMBIAMENTI",
+        "mp.btn.mod.install": "INSTALLA MOD",
+        "mp.btn.mod.enable.mods": "ABILITA TUTTE LE MOD",
+        "mp.btn.mod.disable.mods": "DISABILITA TUTTE LE MOD",
+        "mp.btn.mod.save": "SALVA CAMBIAMENTI",
+        "mp.name": "Nome Modpack",
+        "mp.image": "Immagine Modpack",
+        "mp.change.image": "Cambia Immagine"
+    }
+}

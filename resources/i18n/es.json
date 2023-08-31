@@ -1,0 +1,19 @@
+{
+    "es": {
+        "btn.connect": "CONECTAR MODPACK",
+        "btn.create": "CREAR MODPACK",
+        "btn.remove": "ELIMINAR",
+        "btn.play": "JUGAR",
+        "btn.edit": "EDITAR",
+        "mp.btn.save": "GUARDAR",
+        "mp.btn.download": "DESCARGAR CAMBIOS",
+        "mp.btn.upload": "CARGAR CAMBIOS",
+        "mp.btn.mod.install": "INSTALAR MODS",
+        "mp.btn.mod.enable.mods": "HABILITAR TODOS LOS MODS",
+        "mp.btn.mod.disable.mods": "DESACTIVAR TODOS LOS MODS",
+        "mp.btn.mod.save": "GUARDAR CAMBIOS",
+        "mp.name": "Nombre de Modpack",
+        "mp.image": "Imagen de Modpack",
+        "mp.change.image": "Cambiar Imagen"
+    }
+}

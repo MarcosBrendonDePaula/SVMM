@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-import shutil
+import shutil, i18n
 import sys
 import os
 from PyQt6.QtWidgets import QApplication, QMenu ,QSystemTrayIcon, QWidget, QLabel, QGridLayout, QListWidget, QListWidgetItem, QPushButton, QLineEdit, QVBoxLayout, QDialog
@@ -253,19 +253,19 @@ class MenuView(QWidget):
         layout.addWidget(list_widget, 0, 0, 5, 2)  # (linha, coluna, rowspan, colspan)
 
         # Adicionar botão de criar modpack
-        create_button = QPushButton('Criar Modpack')
+        create_button = QPushButton(i18n.t(f'btn.create'))
         create_button.clicked.connect(self.create_modpack)
         layout.addWidget(create_button, 5, 0, 1, 2)
         
         # Adicionar botão de criar modpack
-        connect_button = QPushButton('Conectar Modpack')
+        connect_button = QPushButton(i18n.t(f'btn.connect'))
         connect_button.clicked.connect(self.create_remote_modpack)
         layout.addWidget(connect_button, 5, 2, 1, 2)
         
         # Adicione os botões
-        self.play_button = QPushButton('JOGAR')
-        self.edit_button = QPushButton('EDITAR')
-        self.remove_button = QPushButton('REMOVER')
+        self.play_button = QPushButton(i18n.t(f'btn.play'))
+        self.edit_button = QPushButton(i18n.t(f'btn.edit'))
+        self.remove_button = QPushButton(i18n.t(f'btn.remove'))
         
         # Associe funções aos botões, se necessário
         self.play_button.clicked.connect(self.play_modpack)
@@ -291,6 +291,6 @@ class MenuView(QWidget):
             list_widget.setCurrentRow(0)  # Seleciona o primeiro item da lista
         
         self.setGeometry(100, 100, 400, 250)
-        self.setWindowTitle('Teste de Layout')
+        self.setWindowTitle('')
         self.show()
 
