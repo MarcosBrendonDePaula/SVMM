@@ -175,6 +175,7 @@ class ModpackConfigWindow(QDialog):
             self.download_button.setDisabled(False)
             self.progress_bar.setVisible(False)
             self.download_button.setText(i18n.t(f'mp.btn.download'))
+            self.update_mods_list()
     
     def upload_modpack(self):
         self.modpack.uploadSignal.connect(self.update_progress)

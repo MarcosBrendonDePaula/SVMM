@@ -7,6 +7,7 @@ from src.mod import Mod
 from src.config import Config
 from src.tools import JasonAutoFix,HashMap,ModpackApi,Extractor
 from tqdm import tqdm
+import math
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
@@ -419,7 +420,7 @@ class Modpack(QObject):
                     progress_percent = (processed / all_tasks) * 100
                     self.uploadSignal.emit({
                         "runing": 1,
-                        "progress": progress_percent,
+                        "progress": math.floor(progress_percent),
                         "step": 1,
                         "done": False
                     })
@@ -447,7 +448,7 @@ class Modpack(QObject):
                     progress_percent = (processed / all_tasks) * 100
                     self.uploadSignal.emit({
                         "runing": 1,
-                        "progress": progress_percent,
+                        "progress": math.floor(progress_percent),
                         "step": 2,
                         "done": False
                     })
@@ -571,7 +572,7 @@ class Modpack(QObject):
 
                     self.uploadSignal.emit({
                         "runing": 1,
-                        "progress": progress,
+                        "progress": math.floor(progress),
                         "step": 2,
                         "done": False
                     })
