@@ -452,7 +452,7 @@ class Modpack(QObject):
                         "step": 2,
                         "done": False
                     })
-
+        
         self.uploadSignal.emit({
             "runing": 0,
             "progress": 100,
@@ -476,15 +476,7 @@ class Modpack(QObject):
         
         dictRemoto = hash_json
         dictLocal = HashMap(self.folder_path, True).hashmap
-        modpack_json_token = None
-        modpack_json_path = Path(self.folder_path) / "modpack.json"
-
-        if modpack_json_path.exists():
-            with modpack_json_path.open("r") as json_file:
-                modpack_data = json.load(json_file)
-                modpack_json_token = modpack_data.get("token")
-                print("Found existing modpack.json with token:", modpack_json_token)
-
+        
         def download_file(file_path):
             if file_path.lower().endswith("desktop.ini"):
                 print(f"Ignoring {file_path}...")
@@ -498,18 +490,7 @@ class Modpack(QObject):
 
                 with local_file_path.open('wb') as local_file:
                     local_file.write(content)
-
-                if file_path.lower() == "modpack.json":
-                    with local_file_path.open("r") as json_file:
-                        modpack_data = json.load(json_file)
-                    modpack_json_token = modpack_data.get("token")
-                    print("Found token in modpack.json:", modpack_json_token)
-                    if modpack_json_token is not None:
-                        with local_file_path.open("w") as json_file:
-                            modpack_data["token"] = modpack_json_token
-                            json.dump(modpack_data, json_file, indent=4)
-                        print("Replaced token in modpack.json")
-
+                    
         max_connections = 20
         download_tasks = []
         local_hash_map = HashMap(self.folder_path).hashmap
@@ -576,9 +557,6 @@ class Modpack(QObject):
                         "step": 2,
                         "done": False
                     })
-                    
-                    if completed_tasks == total_tasks:
-                        finished = True
                     pbar.update(1)
                     
         self.uploadSignal.emit({

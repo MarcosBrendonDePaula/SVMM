@@ -163,7 +163,7 @@ class MenuView(QWidget):
         
         if selected_items:
             selected_item = selected_items[0]  # Use o primeiro item selecionado, se houver
-            modpack:Modpack = selected_item.data(Qt.ItemDataRole.UserRole)  # Obtém o objeto Modpack associado ao item
+            modpack:Modpack = self.modpacks_map[selected_item.data(Qt.ItemDataRole.UserRole)]  # Obtém o objeto Modpack associado ao item
             try:
                 shutil.rmtree(modpack.folder_path)
                 print(f"Folder '{modpack.folder_path}' and its contents have been removed recursively.")

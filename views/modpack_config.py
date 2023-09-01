@@ -191,7 +191,7 @@ class ModpackConfigWindow(QDialog):
         pass
     
     def item_double_clicked(self, item):
-        mod = item.data(Qt.ItemDataRole.UserRole)  # Obtém o objeto Mod associado ao item
+        mod:Mod = item.data(Qt.ItemDataRole.UserRole)  # Obtém o objeto Mod associado ao item
         if mod:
             mod_folder_path = mod.mod_folder_path
             if os.path.exists(mod_folder_path):
