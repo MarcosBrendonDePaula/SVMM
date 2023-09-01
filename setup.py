@@ -3,7 +3,7 @@ from cx_Freeze import setup, Executable
 executables = [
     Executable(
         script="main.py",
-        #base="Win32GUI",
+        base="Win32GUI",
         icon="resources/icon.ico",  # Substitua pelo caminho real para o ícone
         target_name="SVMG.exe",  # Substitua pelo nome que desejar para o executável
         shortcut_name="SVMG - Stardew Valley Mod Manager",  # Nome para o atalho no menu Iniciar

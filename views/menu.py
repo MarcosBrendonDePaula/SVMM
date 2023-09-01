@@ -106,12 +106,12 @@ class MenuView(QWidget):
                 os.startfile(modPack_folder_path)  # Abre a pasta do mod no sistema
                 
     def play_modpack(self):
-        list_widget = self.findChild(QListWidget, "list_widget")
-        selected_items = list_widget.selectedItems()
-
+        list_widget = self.findChild(QListWidget, "list_widget")  # Encontre o QListWidget pelo nome
+        selected_items = list_widget.selectedItems()  # Obtenha os itens selecionados
+        
         if selected_items:
-            selected_item = selected_items[0]
-            modpack = selected_item.data(Qt.ItemDataRole.UserRole)
+            selected_item = selected_items[0]  # Use o primeiro item selecionado, se houver
+            modpack:Modpack = self.modpacks_map[selected_item.data(Qt.ItemDataRole.UserRole)]  # Obtém o objeto Modpack associado ao item
             game = Game()
             game.set_mods_folder(os.path.join(os.getcwd(), modpack.mods_folder()))
             self.create_system_tray_icon(modpack)
