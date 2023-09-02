@@ -47,7 +47,7 @@ class ModpackConfigWindow(QDialog):
         modpack_edit_layout = QVBoxLayout()
 
         name_label = QLabel(i18n.t(f'mp.name'))
-        self.name_edit = QLineEdit(self.modpack.name)
+        self.name_edit = QLineEdit("")
         self.name_edit.textEdited.connect(self.save)
         
         modpack_edit_layout.addWidget(name_label)
@@ -87,21 +87,8 @@ class ModpackConfigWindow(QDialog):
         self.image_preview = QLabel()
         self.image_preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        pixmap = None
-        if self.modpack.image:
-            try:
-                pixmap = Converter.base64_to_QPixmap(self.modpack.image)
-            except Exception as e:
-                print("Erro ao carregar a imagem:", e)
 
-        if not pixmap == None:
-            # Redimensionar a imagem como antes
-            desired_width = 200
-            desired_height = 200
-            pixmap_resized = pixmap.scaled(desired_width, desired_height, Qt.AspectRatioMode.KeepAspectRatio)
-            self.image_preview.setPixmap(pixmap_resized)
         modpack_edit_layout.addWidget(self.image_preview)
-
         #Ajustar imagem ao topo caso a janela seja redimensionada
         modpack_edit_layout.addStretch()
 
@@ -140,7 +127,7 @@ class ModpackConfigWindow(QDialog):
         # confirm_button = QPushButton(i18n.t(f'mp.btn.mod.save'))
         # confirm_button.clicked.connect(self.confirm_changes)
         # modpack_edit_layout.addWidget(confirm_button)
-        
+        self.show_info()
         layout.addLayout(modpack_edit_layout)
         self.setLayout(layout)
         self.setWindowTitle("Modpack Editor")
@@ -176,6 +163,25 @@ class ModpackConfigWindow(QDialog):
             self.progress_bar.setVisible(False)
             self.download_button.setText(i18n.t(f'mp.btn.download'))
             self.update_mods_list()
+            self.modpack.reload()
+            self.show_info()
+    
+    def show_info(self):
+        self.name_edit.setText(self.modpack.name)
+        pixmap = None
+        if self.modpack.image:
+            try:
+                pixmap = Converter.base64_to_QPixmap(self.modpack.image)
+            except Exception as e:
+                print("Erro ao carregar a imagem:", e)
+
+        if not pixmap == None:
+            # Redimensionar a imagem como antes
+            desired_width = 200
+            desired_height = 200
+            pixmap_resized = pixmap.scaled(desired_width, desired_height, Qt.AspectRatioMode.KeepAspectRatio)
+            self.image_preview.setPixmap(pixmap_resized)
+        pass
     
     def upload_modpack(self):
         self.modpack.uploadSignal.connect(self.update_progress)

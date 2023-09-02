@@ -33,8 +33,7 @@ class Modpack(QObject):
         self.token   = token
         self.version = version
         
-        folder_path = os.path.join(base_directory, 'modpacks', _uuid)
-        self.folder_path = folder_path
+        self.folder_path = os.path.join(base_directory, 'modpacks', _uuid)
 
         self.mods_enabled_path = os.path.join(self.folder_path, 'mods_enabled')
         self.mods_disabled_path = os.path.join(self.folder_path, 'mods_disabled')
@@ -565,7 +564,28 @@ class Modpack(QObject):
             "step" : None,
             "done" : True
         })
+    
+    def reload(self):
+        json_filename = os.path.join(self.folder_path, 'modpack.json')
+        if os.path.exists(json_filename):
+            modpack_data = JasonAutoFix.load(json_filename)
+            if not "uuid" in modpack_data:
+                modpack_data['uuid'] = ""
+            if not "token" in modpack_data:
+                modpack_data['token'] = ""
+            if not "version" in modpack_data:
+                modpack_data['version'] = "0.0.0"
+
+            # Atualize os atributos da instância existente com os dados do JSON
+            self.name = modpack_data['name']
+            self.image = modpack_data['image']
+            self._uuid = modpack_data['uuid']
+            self.token = modpack_data['token']
+            self.version = modpack_data['version']
             
+        else:
+            raise FileNotFoundError(f"JSON file not found: {json_filename}")
+    
     @classmethod
     def load_from_json(cls, dir_name, base_directory=""):
         """
