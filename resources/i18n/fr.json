@@ -1,10 +1,12 @@
 {
     "fr": {
-        "btn.connect": "CONNECTER MODPACK",
-        "btn.create": "CRÉER MODPACK",
+        "list.open.folder": "Double-cliquez pour ouvrir le dossier",
+        "btn.connect": "CONNECTER LE MODPACK",
+        "btn.create": "CRÉER LE MODPACK",
         "btn.remove": "SUPPRIMER",
         "btn.play": "JOUER",
         "btn.edit": "ÉDITER",
+        "btn.share": "Partager le Modpack",
         "mp.btn.save": "ENREGISTRER",
         "mp.btn.download": "TÉLÉCHARGER LES MODIFICATIONS",
         "mp.btn.upload": "TÉLÉCHARGER LES MODIFICATIONS",
@@ -14,6 +16,12 @@
         "mp.btn.mod.save": "ENREGISTRER LES MODIFICATIONS",
         "mp.name": "Nom du Modpack",
         "mp.image": "Image du Modpack",
-        "mp.change.image": "Changer l'Image"
+        "mp.change.image": "Changer l'image",
+        "mp.btn.event.mapping": "Mapping des fichiers",
+        "mp.btn.event.uploading": "Attente...",
+        "mp.btn.event.downloading": "Attente...",
+        "mp.btn.event.updone": "Terminé !",
+        "mp.btn.share.copied": "L'UUID a été copié dans le presse-papiers. Envoyez-le à votre ami !",
+        "mp.btn.share.copied.window.title": "UUID Copié"
     }
 }

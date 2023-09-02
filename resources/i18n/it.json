@@ -1,19 +1,27 @@
 {
     "it": {
-        "btn.connect": "COLLEGA MODPACK",
+        "list.open.folder": "Doppio clic per aprire la cartella",
+        "btn.connect": "CONNETTI MODPACK",
         "btn.create": "CREA MODPACK",
         "btn.remove": "RIMUOVI",
         "btn.play": "GIOCA",
         "btn.edit": "MODIFICA",
+        "btn.share": "Condividi Modpack",
         "mp.btn.save": "SALVA",
-        "mp.btn.download": "SCARICA CAMBIAMENTI",
-        "mp.btn.upload": "CARICA CAMBIAMENTI",
+        "mp.btn.download": "SCARICA MODIFICHE",
+        "mp.btn.upload": "CARICA MODIFICHE",
         "mp.btn.mod.install": "INSTALLA MOD",
-        "mp.btn.mod.enable.mods": "ABILITA TUTTE LE MOD",
-        "mp.btn.mod.disable.mods": "DISABILITA TUTTE LE MOD",
-        "mp.btn.mod.save": "SALVA CAMBIAMENTI",
-        "mp.name": "Nome Modpack",
-        "mp.image": "Immagine Modpack",
-        "mp.change.image": "Cambia Immagine"
+        "mp.btn.mod.enable.mods": "ABILITA TUTTI I MOD",
+        "mp.btn.mod.disable.mods": "DISABILITA TUTTI I MOD",
+        "mp.btn.mod.save": "SALVA MODIFICHE",
+        "mp.name": "Nome del Modpack",
+        "mp.image": "Immagine del Modpack",
+        "mp.change.image": "Cambia Immagine",
+        "mp.btn.event.mapping": "Mappatura dei file",
+        "mp.btn.event.uploading": "Attendere...",
+        "mp.btn.event.downloading": "Attendere...",
+        "mp.btn.event.updone": "Fatto!",
+        "mp.btn.share.copied": "L'UUID è stato copiato negli appunti. Inviatelo al vostro amico!",
+        "mp.btn.share.copied.window.title": "UUID Copiato"
     }
 }

@@ -3,16 +3,23 @@ from pathlib import Path
 import shutil, i18n
 import sys
 import os
-from PyQt6.QtWidgets import QApplication, QMenu ,QSystemTrayIcon, QWidget, QLabel, QGridLayout, QListWidget, QListWidgetItem, QPushButton, QLineEdit, QVBoxLayout, QDialog
+
+from PyQt6.QtWidgets import (
+    QSizePolicy, QMenu ,QSystemTrayIcon, 
+    QWidget, QLabel, QGridLayout, QListWidget, QListWidgetItem, 
+    QPushButton, QLineEdit, QVBoxLayout, QDialog,
+    QApplication,QMessageBox
+)
+
 from PyQt6.QtGui import QPixmap, QIcon, QFont
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, QSize
 import base64
 
 from src.config import Config
 from src.game import Game
 from src.modpack import Modpack
 from views.modpack_config import ModpackConfigWindow
-from src.tools import (Converter)
+from src.tools import (Converter, Resources)
 
 class GameThread(QThread):
     finished = pyqtSignal()
@@ -69,10 +76,17 @@ class MenuView(QWidget):
             item = QListWidgetItem()
             item.setData(Qt.ItemDataRole.UserRole, modpack._uuid)  # Associe o objeto Modpack ao item da lista
             item.setText(modpack.name)  # Define o texto do item como o nome do modpack
+            
             icon_pixmap = Converter.base64_to_QPixmap(modpack.image)  # Converte a base64 em QPixmap
-            icon_pixmap_resized = icon_pixmap.scaledToHeight(32)  # Redimensione para 128 pixels de altura (ajuste conforme necessário)
-            item.setIcon(QIcon(icon_pixmap_resized))  # Define o ícone do item
+            icon = QIcon(icon_pixmap.scaled(QSize(100, 100)))
+            item.setIcon(icon)  # Define o ícone do item
+            
+            font = item.font()
+            font.setPointSize(18)  # Defina o tamanho da fonte desejado (ajuste conforme necessário)
+            item.setFont(font)
+            
             item.setToolTip(i18n.t('list.open.folder'))
+            item.setSizeHint(QSize(100, 50))
             list_widget.addItem(item)  # Adiciona o item à lista
 
     def on_item_selected(self):
@@ -227,7 +241,6 @@ class MenuView(QWidget):
             server_host = f"{conf.get('SYNCAPI','protocol')}://{conf.get('SYNCAPI','host')}"
             api = ModpackApi(server_host)
             resp = api.get_modpack_info(uuid)
-            print(resp)
             if resp['status'] == 200:
                 modpack = Modpack(resp['json']['name'], _uuid=resp['json']['uuid'])
                 # Create the path for modpack.json in the modpack folder
@@ -245,39 +258,46 @@ class MenuView(QWidget):
         font = QFont("Roboto", weight=QFont.Weight.Bold)
         font.setPointSize(25)  # Defina o tamanho da fonte
         
-        # Adicione imagem acima do nome da modpack
         self.icon_label = QLabel()
-        self.icon_pixmap = QPixmap()  # Você deve definir a imagem corretamente aqui
+        self.icon_pixmap = QPixmap()
         icon_pixmap_resized = self.icon_pixmap.scaledToHeight(128)  # Redimensione para 128 pixels de altura (ajuste conforme necessário)
         self.icon_label.setPixmap(icon_pixmap_resized)
         self.info_layout.addWidget(self.icon_label, 0, 0, 1, 2, alignment=Qt.AlignmentFlag.AlignCenter)
         
-        # Adicione nome da modpack
-        self.name_label = QLabel()  # Defina o nome da modpack corretamente aqui
+        self.name_label = QLabel()
         font = QFont("Roboto", weight=QFont.Weight.Bold)
-        font.setPointSize(25)  # Defina o tamanho da fonte
+        font.setPointSize(25)
         self.name_label.setFont(font)
         self.info_layout.addWidget(self.name_label, 1, 0, 1, 2, alignment=Qt.AlignmentFlag.AlignCenter)
         
         # Adicionar lista à esquerda
         list_widget = QListWidget(self)
         list_widget.setObjectName("list_widget")  # Defina o nome do objeto
-        layout.addWidget(list_widget, 0, 0, 5, 2)  # (linha, coluna, rowspan, colspan)
+        layout.addWidget(list_widget, 1, 0, 5, 2)  # (linha, coluna, rowspan, colspan)
 
         # Adicionar botão de criar modpack
         create_button = QPushButton(i18n.t(f'btn.create'))
         create_button.clicked.connect(self.create_modpack)
-        layout.addWidget(create_button, 5, 0, 1, 2)
+        self.define_button_icon(create_button, 'Add File.png', (45,45), False)
+        layout.addWidget(create_button, 0, 0, 1, 1)
         
         # Adicionar botão de criar modpack
         connect_button = QPushButton(i18n.t(f'btn.connect'))
+        self.define_button_icon(connect_button, 'Add Link.png', (45,45), False)
         connect_button.clicked.connect(self.create_remote_modpack)
-        layout.addWidget(connect_button, 5, 2, 1, 2)
+        layout.addWidget(connect_button, 0, 1, 1, 1)
+        
+        
         
         # Adicione os botões
         self.play_button = QPushButton(i18n.t(f'btn.play'))
         self.edit_button = QPushButton(i18n.t(f'btn.edit'))
         self.remove_button = QPushButton(i18n.t(f'btn.remove'))
+        
+
+        self.define_button_icon(self.play_button, 'Play.png', (45,45), False)
+        self.define_button_icon(self.edit_button, 'Edit.png', (45,45), False)
+        self.define_button_icon(self.remove_button, 'Delete.png', (45,45), False)
         
         # Associe funções aos botões, se necessário
         self.play_button.clicked.connect(self.play_modpack)
@@ -289,13 +309,26 @@ class MenuView(QWidget):
         button_layout.addWidget(self.play_button, 0, 0)
         button_layout.addWidget(self.edit_button, 0, 1)
         button_layout.addWidget(self.remove_button, 0, 2)
-            
         # Adicione o layout de botões ao layout de informações
         self.info_layout.addLayout(button_layout, 4, 0, 1, 2, alignment=Qt.AlignmentFlag.AlignCenter)
-            
+        
+        #config btn
+        self.config_btn_size = (40,40)
+        self.config_button = QPushButton()
+        self.define_button_icon(self.config_button, 'Settings.png', (45,45))
+        self.config_button.setToolTip("Este é um botão com ícone")
+        
+        layout.addWidget(self.config_button, 6, 0, 1, 1)
+        #----------------------------------------------------------
+        
+        self.share_button = QPushButton()
+        self.setToolTip(i18n.t(f'btn.share'))
+        self.define_button_icon(self.share_button, 'Share.png', (60,55), True)
+        self.share_button.clicked.connect(self.share_button_clicked)
+        layout.addWidget(self.share_button,0,5,1,2)
+        
         # Configure o layout de informações na posição desejada
-        layout.addLayout(self.info_layout, 0, 2, 5, 2)
-    
+        layout.addLayout(self.info_layout, 1, 2, 5, 2)
         self.setLayout(layout)
         self.ListAllModpacks()
         
@@ -305,4 +338,29 @@ class MenuView(QWidget):
         self.setGeometry(100, 100, 400, 250)
         self.setWindowTitle('')
         self.show()
-
+    
+    def share_button_clicked(self):
+        list_widget = self.findChild(QListWidget, "list_widget")  # Encontre o QListWidget pelo nome
+        selected_items = list_widget.selectedItems()  # Obtenha os itens selecionados
+        if selected_items:
+            selected_item = selected_items[0]  # Use o primeiro item selecionado, se houver
+            modpack:Modpack = self.modpacks_map[selected_item.data(Qt.ItemDataRole.UserRole)]  # Obtém o objeto Modpack associado ao item
+            clipboard = QApplication.clipboard()
+            clipboard.setText(modpack._uuid)
+            QMessageBox.information(self, i18n.t('mp.btn.share.copied.window.title'), i18n.t('mp.btn.share.copied'))
+        pass
+    
+    def define_button_icon(self, button:QPushButton, resource_img_name, size=(45,45), usePolice = True):
+        icon = QIcon(f"{Resources.get_image_path(resource_img_name)}")
+        icon_pixmap = icon.pixmap(size[0], size[1])
+        button.setIcon(icon)
+        button.setIconSize(icon_pixmap.size())
+        if usePolice:
+            self.define_button_icon_pollice(button, size)
+    
+    def define_button_icon_pollice(self, button:QPushButton, size=(45,45)):
+        size_policy = button.sizePolicy()
+        size_policy.setHorizontalPolicy(QSizePolicy.Policy.Fixed)
+        size_policy.setVerticalPolicy(QSizePolicy.Policy.Fixed)
+        button.setSizePolicy(size_policy)
+        button.setFixedSize(size[0], size[1])

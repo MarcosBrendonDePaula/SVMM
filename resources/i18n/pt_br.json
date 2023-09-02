@@ -1,11 +1,12 @@
 {
     "pt_br": {
-        "list.open.folder": "Clique duas vezes para abrir a pasta",
+        "list.open.folder": "Clique Duplo para Abrir Pasta",
         "btn.connect": "CONECTAR MODPACK",
         "btn.create": "CRIAR MODPACK",
         "btn.remove": "REMOVER",
         "btn.play": "JOGAR",
         "btn.edit": "EDITAR",
+        "btn.share": "Compartilhar Modpack",
         "mp.btn.save": "SALVAR",
         "mp.btn.download": "BAIXAR ALTERAÇÕES",
         "mp.btn.upload": "CARREGAR ALTERAÇÕES",
@@ -16,8 +17,11 @@
         "mp.name": "Nome do Modpack",
         "mp.image": "Imagem do Modpack",
         "mp.change.image": "Alterar Imagem",
-        "mp.btn.event.mapping": "mapeamento de arquivos",
-        "mp.btn.event.uploading": "aguarde...",
-        "mp.btn.event.updone": "Concluído!"
+        "mp.btn.event.mapping": "Mapeando arquivos",
+        "mp.btn.event.uploading": "Aguarde...",
+        "mp.btn.event.downloading": "Aguarde...",
+        "mp.btn.event.updone": "Concluído!",
+        "mp.btn.share.copied": "O UUID foi copiado para a área de transferência. Envie-o ao seu amigo!",
+        "mp.btn.share.copied.window.title": "UUID Copiado"
     }
 }

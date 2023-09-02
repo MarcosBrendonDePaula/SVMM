@@ -1,10 +1,12 @@
 {
     "de": {
+        "list.open.folder": "Doppelklicken, um den Ordner zu öffnen",
         "btn.connect": "MODPACK VERBINDEN",
         "btn.create": "MODPACK ERSTELLEN",
         "btn.remove": "ENTFERNEN",
         "btn.play": "SPIELEN",
         "btn.edit": "BEARBEITEN",
+        "btn.share": "Modpack teilen",
         "mp.btn.save": "SPEICHERN",
         "mp.btn.download": "ÄNDERUNGEN HERUNTERLADEN",
         "mp.btn.upload": "ÄNDERUNGEN HOCHLADEN",
@@ -14,6 +16,12 @@
         "mp.btn.mod.save": "ÄNDERUNGEN SPEICHERN",
         "mp.name": "Modpack-Name",
         "mp.image": "Modpack-Bild",
-        "mp.change.image": "Bild ändern"
+        "mp.change.image": "Bild ändern",
+        "mp.btn.event.mapping": "Dateizuordnung",
+        "mp.btn.event.uploading": "Warten...",
+        "mp.btn.event.downloading": "Warten...",
+        "mp.btn.event.updone": "Fertig!",
+        "mp.btn.share.copied": "Die UUID wurde in die Zwischenablage kopiert. Sende sie an deinen Freund!",
+        "mp.btn.share.copied.window.title": "UUID kopiert"
     }
 }
