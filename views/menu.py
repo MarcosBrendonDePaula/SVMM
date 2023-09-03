@@ -15,10 +15,13 @@ from PyQt6.QtGui import QPixmap, QIcon, QFont
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QSize
 import base64
 
+
+
 from src.config import Config
 from src.game import Game
 from src.modpack import Modpack
 from views.modpack_config import ModpackConfigWindow
+from views.config import Config as ConfigView
 from src.tools import (Converter, Resources)
 
 class GameThread(QThread):
@@ -167,6 +170,10 @@ class MenuView(QWidget):
     def show_window(self):
         self.show()
 
+    def show_config(self):
+        conf = ConfigView()
+        conf.exec()
+            
     def close_app(self):
         self.tray_icon.hide()
         self.close()
@@ -315,6 +322,7 @@ class MenuView(QWidget):
         #config btn
         self.config_btn_size = (40,40)
         self.config_button = QPushButton()
+        self.config_button.clicked.connect(self.show_config)
         self.define_button_icon(self.config_button, 'Settings.png', (45,45))
         self.config_button.setToolTip("Este é um botão com ícone")
         
