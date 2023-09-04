@@ -134,7 +134,7 @@ class MenuView(QWidget):
             self.create_system_tray_icon(modpack)
 
             self.play_button.setEnabled(False)  # Desabilitar o botão "JOGAR"
-            self.play_button.setText('RODANDO')  # Alterar o texto do botão
+            self.play_button.setText(i18n.t("btn.play.running"))  # Alterar o texto do botão
 
             # Inicie o jogo em uma thread separada
             self.game_thread = GameThread(game)
@@ -147,7 +147,7 @@ class MenuView(QWidget):
         self.show()
 
         self.play_button.setEnabled(True)  # Habilitar o botão "JOGAR" novamente
-        self.play_button.setText('JOGAR')  # Restaurar o texto do botão
+        self.play_button.setText(i18n.t("btn.play"))  # Restaurar o texto do botão
         
     def edit_modpack(self):
         list_widget = self.findChild(QListWidget, "list_widget")  # Encontre o QListWidget pelo nome
@@ -197,17 +197,17 @@ class MenuView(QWidget):
     
     def create_modpack(self):
         dialog = QDialog(self)
-        dialog.setWindowTitle('Criar Modpack')
+        dialog.setWindowTitle(i18n.t("title.create.modpack"))
         
         layout = QVBoxLayout()
         
-        label = QLabel('Digite o nome da Modpack:')
+        label = QLabel(i18n.t("title.create.modpack.name"))
         layout.addWidget(label)
         
         name_input = QLineEdit()
         layout.addWidget(name_input)
         
-        confirm_button = QPushButton('Criar')
+        confirm_button = QPushButton(i18n.t("title.create.modpack.create"))
         confirm_button.clicked.connect(lambda: self.confirm_create_modpack(name_input.text(), dialog))
         layout.addWidget(confirm_button)
 
@@ -226,7 +226,7 @@ class MenuView(QWidget):
         name_input = QLineEdit()
         layout.addWidget(name_input)
         
-        confirm_button = QPushButton('Criar')
+        confirm_button = QPushButton(i18n.t("btn.create.remote.modpack.create"))
         confirm_button.clicked.connect(lambda: self.confirm_create_remote_modpack(name_input.text(), dialog))
         layout.addWidget(confirm_button)
 
