@@ -14,14 +14,17 @@
         "mp.btn.mod.enable.mods": "ALLE MODS AKTIVIEREN",
         "mp.btn.mod.disable.mods": "ALLE MODS DEAKTIVIEREN",
         "mp.btn.mod.save": "ÄNDERUNGEN SPEICHERN",
-        "mp.name": "Modpack-Name",
-        "mp.image": "Modpack-Bild",
+        "mp.name": "Modpack Name",
+        "mp.image": "Modpack Bild",
         "mp.change.image": "Bild ändern",
-        "mp.btn.event.mapping": "Dateizuordnung",
-        "mp.btn.event.uploading": "Warten...",
-        "mp.btn.event.downloading": "Warten...",
+        "mp.btn.event.mapping": "Dateien mappen",
+        "mp.btn.event.uploading": "warten...",
+        "mp.btn.event.downloading": "warten...",
         "mp.btn.event.updone": "Fertig!",
-        "mp.btn.share.copied": "Die UUID wurde in die Zwischenablage kopiert. Sende sie an deinen Freund!",
-        "mp.btn.share.copied.window.title": "UUID kopiert"
+        "mp.btn.share.copied": "Die UUID wurde in die Zwischenablage kopiert. Schicken Sie es an Ihren Freund!",
+        "mp.btn.share.copied.window.title": "UUID kopiert",
+        "Config.btn.procurar": "Suchen",
+        "Config.btn.salvar/reinciar": "speichern und neustarten",
+        "Config.btn.cancelbutton": "Abbrechen"
     }
 }

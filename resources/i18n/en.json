@@ -22,6 +22,9 @@
         "mp.btn.event.downloading": "wait...",
         "mp.btn.event.updone": "Done!",
         "mp.btn.share.copied" : "The UUID has been copied to the clipboard. Send it to your friend!",
-        "mp.btn.share.copied.window.title" : "Copied UUID"
+        "mp.btn.share.copied.window.title" : "Copied UUID",
+        "Config.btn.procurar" : "Find",
+        "Config.btn.salvar/reinciar" : "save with restart",
+        "Config.btn.cancelbutton" : "Cancel"
     }
 }

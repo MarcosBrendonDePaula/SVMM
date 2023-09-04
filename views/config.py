@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QMessageBox,QDialog, QLabel, QLineEdit, QComboBox, Q
 from PyQt6.QtCore import QCoreApplication
 from pathlib import Path
 from typing import List
+import shutil, i18n
 from src.config import Config as SysConfig
 
 class Config(QDialog):
@@ -23,7 +24,7 @@ class Config(QDialog):
         self.layout_basico.addWidget(self.game_path_input, 0, 1)
         
         # Botão para procurar o arquivo StardewModdingAPI.exe
-        self.browse_button = QPushButton('Procurar')
+        self.browse_button = QPushButton(i18n.t(f'Config.btn.procurar'))
         self.layout_basico.addWidget(self.browse_button, 0, 2)
 
         # # Rótulo e campo de entrada para Mods Path
@@ -55,8 +56,8 @@ class Config(QDialog):
         self.layout_basico.addWidget(self.sync_api_input, 4, 1)
 
         # Botões de ação
-        self.save_button = QPushButton('Salvar e Reiniciar')
-        self.cancel_button = QPushButton('Cancelar')
+        self.save_button = QPushButton(i18n.t(f'Config.btn.slavarreiniciar'))
+        self.cancel_button = QPushButton(i18n.t(f'Config.btn.cancelbutton'))
         self.layout_basico.addWidget(self.save_button, 5, 0)
         self.layout_basico.addWidget(self.cancel_button, 5, 1)
 
