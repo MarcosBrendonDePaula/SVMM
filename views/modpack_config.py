@@ -51,7 +51,7 @@ class ModpackConfigWindow(QDialog):
 
         name_label = QLabel(i18n.t(f'mp.name'))
         self.name_edit = QLineEdit("")
-        self.name_edit.textEdited.connect(self.save)
+        self.name_edit.editingFinished.connect(self.save)
         
         modpack_edit_layout.addWidget(name_label)
         modpack_edit_layout.addWidget(self.name_edit)

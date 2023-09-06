@@ -358,7 +358,7 @@ class MenuView(QWidget):
         self.setToolTip(i18n.t(f'btn.share'))
         self.define_button_icon(self.share_button, 'Share.png', (60,55), True)
         self.share_button.clicked.connect(self.share_button_clicked)
-        layout.addWidget(self.share_button,0,5,1,2)
+        layout.addWidget(self.share_button,0,3,1,1)
         
         # Configure o layout de informações na posição desejada
         layout.addLayout(self.info_layout, 1, 2, 5, 2)
