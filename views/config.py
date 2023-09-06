@@ -18,23 +18,17 @@ class Config(QDialog):
         self.layout_basico = QGridLayout()
 
         # Rótulo e campo de seleção para Game Path
-        self.label_game_path = QLabel('Game Path:')
+        self.label_game_path = QLabel(i18n.t(f'Config.label.game_path'))
         self.game_path_input = QLineEdit()
         self.layout_basico.addWidget(self.label_game_path, 0, 0)
         self.layout_basico.addWidget(self.game_path_input, 0, 1)
         
         # Botão para procurar o arquivo StardewModdingAPI.exe
-        self.browse_button = QPushButton(i18n.t(f'Config.btn.procurar'))
+        self.browse_button = QPushButton(i18n.t(f'Config.btn.find'))
         self.layout_basico.addWidget(self.browse_button, 0, 2)
 
-        # # Rótulo e campo de entrada para Mods Path
-        # self.label_mods_path = QLabel('Mods Path:')
-        # self.mods_path_input = QLineEdit()
-        # self.layout_basico.addWidget(self.label_mods_path, 1, 0)
-        # self.layout_basico.addWidget(self.mods_path_input, 1, 1)
-
         # Rótulo e campo de seleção para a linguagem
-        self.label_language = QLabel('Language:')
+        self.label_language = QLabel(i18n.t(f'Config.label.language'))
         self.language_select = QComboBox()
         languages = self.list_langs()
         self.language_select.addItems(languages)
@@ -42,7 +36,7 @@ class Config(QDialog):
         self.layout_basico.addWidget(self.language_select, 2, 1)
 
         # Rótulo e campo de seleção para LogLevel
-        self.label_log_level = QLabel('LogLevel:')
+        self.label_log_level = QLabel(i18n.t(f'Config.label.log_level'))
         self.log_level_select = QComboBox()
         log_levels = ['INFO', 'DEBUG', 'WARNING', 'ERROR']
         self.log_level_select.addItems(log_levels)
@@ -50,20 +44,20 @@ class Config(QDialog):
         self.layout_basico.addWidget(self.log_level_select, 3, 1)
 
         # Rótulo e campo de entrada para SYNCAPI
-        self.label_sync_api = QLabel('SyncAPI:')
+        self.label_sync_api = QLabel(i18n.t(f'Config.label.sync_api'))
         self.sync_api_input = QLineEdit()
         self.layout_basico.addWidget(self.label_sync_api, 4, 0)
         self.layout_basico.addWidget(self.sync_api_input, 4, 1)
 
         # Botões de ação
-        self.save_button = QPushButton(i18n.t(f'Config.btn.slavarreiniciar'))
-        self.cancel_button = QPushButton(i18n.t(f'Config.btn.cancelbutton'))
+        self.save_button = QPushButton(i18n.t(f'Config.btn.salve_restart'))
+        self.cancel_button = QPushButton(i18n.t(f'Config.btn.cancel'))
         self.layout_basico.addWidget(self.save_button, 5, 0)
         self.layout_basico.addWidget(self.cancel_button, 5, 1)
 
         self.setLayout(self.layout_basico)
         self.setGeometry(100, 100, 400, 250)
-        self.setWindowTitle('Configuration')
+        self.setWindowTitle(i18n.t(f'Config.window.title'))
 
         # Conecte os botões aos métodos correspondentes
         self.save_button.clicked.connect(self.save_and_restart)
