@@ -1,12 +1,14 @@
 {
     "en": {
-        "list.open.folder": "Double Click to Open folder",
+        "list.open.folder": "Double-click to open the folder",
         "btn.connect": "CONNECT MODPACK",
         "btn.create": "CREATE MODPACK",
         "btn.remove": "REMOVE",
         "btn.play": "PLAY",
         "btn.edit": "EDIT",
         "btn.share": "Share Modpack",
+        "btn.share.tooltipe": "Click to copy uuid",
+        "btn.config": "Config",
         "mp.btn.save": "SAVE",
         "mp.btn.download": "DOWNLOAD CHANGES",
         "mp.btn.upload": "UPLOAD CHANGES",
@@ -17,14 +19,24 @@
         "mp.name": "Modpack Name",
         "mp.image": "Modpack Image",
         "mp.change.image": "Change Image",
-        "mp.btn.event.mapping": "mapping files",
-        "mp.btn.event.uploading": "wait...",
-        "mp.btn.event.downloading": "wait...",
+        "mp.btn.event.mapping": "Mapping files",
+        "mp.btn.event.uploading": "Please wait...",
+        "mp.btn.event.downloading": "Please wait...",
         "mp.btn.event.updone": "Done!",
-        "mp.btn.share.copied" : "The UUID has been copied to the clipboard. Send it to your friend!",
-        "mp.btn.share.copied.window.title" : "Copied UUID",
-        "Config.btn.procurar" : "Find",
-        "Config.btn.salvar/reinciar" : "save with restart",
-        "Config.btn.cancelbutton" : "Cancel"
+        "mp.btn.share.copied": "The UUID has been copied to the clipboard. Send it to your friend!",
+        "mp.btn.share.copied.window.title": "UUID Copied",
+        "Config.window.title": "Configuration",
+        "Config.label.game_path": "Game Path:",
+        "Config.label.language": "Language:",
+        "Config.label.log_level": "Log Level:",
+        "Config.label.sync_api": "Sync API:",
+        "Config.btn.find": "Find",
+        "Config.btn.salve_restart": "Save and Restart",
+        "Config.btn.cancel": "Cancel",
+        "remote.window.title": "Modpack Connector",
+        "remote.label.modpack_uuid": "MODPACK UUID",
+        "remote.btn.connect": "Connect Modpack",
+        "remote.error.uuid": "Please check the provided UUID"
     }
+    
 }

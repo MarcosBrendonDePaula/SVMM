@@ -43,10 +43,11 @@ class Config:
         if os.path.exists('settings.ini'):
             self.config.read('settings.ini')
         else:
-            self.set_default_console()
-            self.set_default_game()
-            self.set_default_svmg()
             self.save()  # Cria o arquivo com as configurações padrão
+        
+        self.set_default_console()
+        self.set_default_game()
+        self.set_default_svmg()
         
         lang = self.get('SVMG', 'lang')
         i18n.config.set('locale', lang)
@@ -54,17 +55,29 @@ class Config:
         i18n.resource_loader.load_translation_file(f"{lang}.json",(Path('resources') / "i18n"), lang)
     
     def set_default_svmg(self):
-        self.set('SVMG', 'lang', 'en')
-    
+        self.ensure_config_field('SVMG', 'lang', 'en')
+
     def set_default_console(self):
-        self.set('CONSOLE', 'loglevel', 'INFO')
+        self.ensure_config_field('CONSOLE', 'loglevel', 'INFO')
 
     def set_default_game(self):
-        self.set('GAME', 'gamepath', self.find_stardew_valley_installation_path())
-        self.set('GAME', 'modsfolder', 'Mods')
-        self.set('SYNCAPI', 'host', 'svmgapi.marcosbrendon.com:3000')
-        self.set('SYNCAPI', 'protocol', 'http')
+        self.ensure_config_field('GAME', 'gamepath', self.find_stardew_valley_installation_path())
+        self.ensure_config_field('GAME', 'modsfolder', 'Mods')
+        self.ensure_config_field('SYNCAPI', 'host', 'svmgapi.marcosbrendon.com:3000')
+        self.ensure_config_field('SYNCAPI', 'protocol', 'http')
 
+
+    def ensure_config_field(self, section, key, default_value):
+        """
+        Verifica se uma seção e chave específica existem no arquivo de configuração.
+        Se não existirem, cria-os com o valor padrão especificado.
+        """
+        if section not in self.config:
+            self.config[section] = {}
+        if key not in self.config[section]:
+            self.set(section, key, default_value)
+            self.save()
+    
     def find_steam_installation_path(self):
         if platform.system() == 'Windows':
             steam_registry_path = r'SOFTWARE\WOW6432Node\Valve\Steam'

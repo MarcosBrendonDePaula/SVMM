@@ -1,7 +1,6 @@
 import json
 from pathlib import Path
 import shutil, i18n
-import sys
 import os
 
 from PyQt6.QtWidgets import (
@@ -13,9 +12,6 @@ from PyQt6.QtWidgets import (
 
 from PyQt6.QtGui import QPixmap, QIcon, QFont
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QSize
-import base64
-
-
 
 from src.config import Config
 from src.game import Game
@@ -149,17 +145,34 @@ class MenuView(QWidget):
         self.play_button.setEnabled(True)  # Habilitar o botão "JOGAR" novamente
         self.play_button.setText(i18n.t("btn.play"))  # Restaurar o texto do botão
         
-    def edit_modpack(self):
-        list_widget = self.findChild(QListWidget, "list_widget")  # Encontre o QListWidget pelo nome
-        selected_items = list_widget.selectedItems()  # Obtenha os itens selecionados
-        
-        if selected_items:
-            selected_item = selected_items[0]  # Use o primeiro item selecionado, se houver
-            modpack = self.modpacks_map[selected_item.data(Qt.ItemDataRole.UserRole)]
-            # Abra a janela de configuração passando o objeto Modpack
+    def edit_modpack(self, modpack:Modpack = None, force_download=False):
+        if modpack:
             config_window = ModpackConfigWindow(modpack)
+            config_window.updateSignal.connect(self.modpack_updated)
+            if force_download:
+                config_window.download_modpack()
             config_window.exec()
+        else:
+            list_widget = self.findChild(QListWidget, "list_widget")  # Encontre o QListWidget pelo nome
+            selected_items = list_widget.selectedItems()  # Obtenha os itens selecionados
+            
+            if selected_items:
+                selected_item = selected_items[0]  # Use o primeiro item selecionado, se houver
+                modpack = self.modpacks_map[selected_item.data(Qt.ItemDataRole.UserRole)]
+                # Abra a janela de configuração passando o objeto Modpack
+                config_window = ModpackConfigWindow(modpack)
+                config_window.updateSignal.connect(self.modpack_updated)
+                if force_download:
+                    config_window.download_modpack()
+                config_window.exec()
 
+    def modpack_updated(self):
+        self.ListAllModpacks()
+        list_widget = self.findChild(QListWidget, "list_widget")  # Encontre o QListWidget pelo nome
+        if list_widget.count() > 0:  # Verifica se a lista não está vazia
+            list_widget.setCurrentRow(0)  # Seleciona o primeiro item da lista
+        pass
+    
     def toggle_window(self, reason):
         if reason == QSystemTrayIcon.ActivationReason.Trigger or reason == QSystemTrayIcon.ActivationReason.MiddleClick:
             if self.isVisible():
@@ -216,17 +229,17 @@ class MenuView(QWidget):
         
     def create_remote_modpack(self):
         dialog = QDialog(self)
-        dialog.setWindowTitle('External Pack')
+        dialog.setWindowTitle(i18n.t("remote.window.title"))
         
         layout = QVBoxLayout()
         
-        label = QLabel('modpack uuid')
+        label = QLabel(i18n.t("remote.label.modpack_uuid"))
         layout.addWidget(label)
         
         name_input = QLineEdit()
         layout.addWidget(name_input)
         
-        confirm_button = QPushButton(i18n.t("btn.create.remote.modpack.create"))
+        confirm_button = QPushButton(i18n.t("remote.btn.connect"))
         confirm_button.clicked.connect(lambda: self.confirm_create_remote_modpack(name_input.text(), dialog))
         layout.addWidget(confirm_button)
 
@@ -256,8 +269,16 @@ class MenuView(QWidget):
                 with modpack_json_path.open('w') as json_file:
                     json.dump(resp['json'], json_file, indent=4)
                     dialog.close()
-                self.ListAllModpacks()
-                    
+                self.listAllModpacksAndDownload(modpack)
+            else:
+                QMessageBox.warning(self, str(resp['status']), i18n.t('remote.error.uuid'))
+                pass
+    
+    def listAllModpacksAndDownload(self,Modpack:Modpack):
+        self.edit_modpack(Modpack, True)
+        self.ListAllModpacks()
+        pass
+    
     def init_ui(self):
         layout = QGridLayout()
         self.info_layout = QGridLayout()
@@ -320,11 +341,11 @@ class MenuView(QWidget):
         self.info_layout.addLayout(button_layout, 4, 0, 1, 2, alignment=Qt.AlignmentFlag.AlignCenter)
         
         #config btn
-        self.config_btn_size = (40,40)
+        self.config_btn_size = (20,20)
         self.config_button = QPushButton()
         self.config_button.clicked.connect(self.show_config)
-        self.define_button_icon(self.config_button, 'Settings.png', (45,45))
-        self.config_button.setToolTip("Este é um botão com ícone")
+        self.define_button_icon(self.config_button, 'Settings.png', (self.config_btn_size[0],self.config_btn_size[1]))
+        self.config_button.setToolTip(i18n.t('btn.config'))
         
         layout.addWidget(self.config_button, 6, 0, 1, 1)
         #----------------------------------------------------------
@@ -333,7 +354,8 @@ class MenuView(QWidget):
         self.setToolTip(i18n.t(f'btn.share'))
         self.define_button_icon(self.share_button, 'Share.png', (60,55), True)
         self.share_button.clicked.connect(self.share_button_clicked)
-        layout.addWidget(self.share_button,0,5,1,2)
+        layout.addWidget(self.share_button,0,3,1,1)
+        self.share_button.setToolTip(i18n.t('btn.share.tooltipe'))
         
         # Configure o layout de informações na posição desejada
         layout.addLayout(self.info_layout, 1, 2, 5, 2)
@@ -372,3 +394,4 @@ class MenuView(QWidget):
         size_policy.setVerticalPolicy(QSizePolicy.Policy.Fixed)
         button.setSizePolicy(size_policy)
         button.setFixedSize(size[0], size[1])
+        

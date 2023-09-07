@@ -10,7 +10,7 @@ from PyQt6.QtCore import Qt, QSize, QThread
 from src.mod import Mod
 from src.tools import (Converter,Extractor,JasonAutoFix)
 from src.modpack import Modpack
-
+from PyQt6.QtCore import pyqtSignal
 
 class WorkerUpload(QThread):
     def __init__(self, modpack:Modpack):
@@ -29,6 +29,9 @@ class WorkerDownload(QThread):
         self.modpack.update_modpack()
 
 class ModpackConfigWindow(QDialog):
+    
+    updateSignal = pyqtSignal(dict)
+    
     def __init__(self, modpack:Modpack):
         super().__init__()
         self.modpack = modpack
@@ -48,7 +51,7 @@ class ModpackConfigWindow(QDialog):
 
         name_label = QLabel(i18n.t(f'mp.name'))
         self.name_edit = QLineEdit("")
-        self.name_edit.textEdited.connect(self.save)
+        self.name_edit.editingFinished.connect(self.save)
         
         modpack_edit_layout.addWidget(name_label)
         modpack_edit_layout.addWidget(self.name_edit)
@@ -136,6 +139,7 @@ class ModpackConfigWindow(QDialog):
         self.modpack.image = self.image or self.modpack.image 
         self.modpack.name = self.name_edit.text()
         self.modpack.save()
+        self.updateSignal.emit({})
     
     def update_progress(self, args:dict):
         if args['step'] == 0:
@@ -165,6 +169,7 @@ class ModpackConfigWindow(QDialog):
             self.update_mods_list()
             self.modpack.reload()
             self.show_info()
+            self.save()
     
     def show_info(self):
         self.name_edit.setText(self.modpack.name)
