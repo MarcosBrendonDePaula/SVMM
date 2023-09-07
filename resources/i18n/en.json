@@ -7,6 +7,8 @@
         "btn.play": "PLAY",
         "btn.edit": "EDIT",
         "btn.share": "Share Modpack",
+        "btn.share.tooltipe": "Click to copy uuid",
+        "btn.config": "Config",
         "mp.btn.save": "SAVE",
         "mp.btn.download": "DOWNLOAD CHANGES",
         "mp.btn.upload": "UPLOAD CHANGES",

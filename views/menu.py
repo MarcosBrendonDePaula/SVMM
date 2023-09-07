@@ -1,7 +1,6 @@
 import json
 from pathlib import Path
 import shutil, i18n
-import sys
 import os
 
 from PyQt6.QtWidgets import (
@@ -13,9 +12,6 @@ from PyQt6.QtWidgets import (
 
 from PyQt6.QtGui import QPixmap, QIcon, QFont
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QSize
-import base64
-
-
 
 from src.config import Config
 from src.game import Game
@@ -345,11 +341,11 @@ class MenuView(QWidget):
         self.info_layout.addLayout(button_layout, 4, 0, 1, 2, alignment=Qt.AlignmentFlag.AlignCenter)
         
         #config btn
-        self.config_btn_size = (40,40)
+        self.config_btn_size = (20,20)
         self.config_button = QPushButton()
         self.config_button.clicked.connect(self.show_config)
-        self.define_button_icon(self.config_button, 'Settings.png', (45,45))
-        self.config_button.setToolTip("Este é um botão com ícone")
+        self.define_button_icon(self.config_button, 'Settings.png', (self.config_btn_size[0],self.config_btn_size[1]))
+        self.config_button.setToolTip(i18n.t('btn.config'))
         
         layout.addWidget(self.config_button, 6, 0, 1, 1)
         #----------------------------------------------------------
@@ -359,6 +355,7 @@ class MenuView(QWidget):
         self.define_button_icon(self.share_button, 'Share.png', (60,55), True)
         self.share_button.clicked.connect(self.share_button_clicked)
         layout.addWidget(self.share_button,0,3,1,1)
+        self.share_button.setToolTip(i18n.t('btn.share.tooltipe'))
         
         # Configure o layout de informações na posição desejada
         layout.addLayout(self.info_layout, 1, 2, 5, 2)
@@ -397,3 +394,4 @@ class MenuView(QWidget):
         size_policy.setVerticalPolicy(QSizePolicy.Policy.Fixed)
         button.setSizePolicy(size_policy)
         button.setFixedSize(size[0], size[1])
+        
