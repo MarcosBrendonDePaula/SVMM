@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QMessageBox,QDialog, QLabel, QLineEdit, QComboBox, Q
 from PyQt6.QtCore import QCoreApplication
 from pathlib import Path
 from typing import List
-import shutil, i18n
+import i18n
 from src.config import Config as SysConfig
 
 class Config(QDialog):
@@ -38,8 +38,7 @@ class Config(QDialog):
         # Rótulo e campo de seleção para LogLevel
         self.label_log_level = QLabel(i18n.t(f'Config.label.log_level'))
         self.log_level_select = QComboBox()
-        log_levels = ['INFO', 'DEBUG', 'WARNING', 'ERROR']
-        self.log_level_select.addItems(log_levels)
+        self.log_level_select.addItems(['INFO', 'DEBUG', 'WARNING', 'ERROR'])
         self.layout_basico.addWidget(self.label_log_level, 3, 0)
         self.layout_basico.addWidget(self.log_level_select, 3, 1)
 
@@ -63,7 +62,7 @@ class Config(QDialog):
         self.save_button.clicked.connect(self.save_and_restart)
         self.cancel_button.clicked.connect(self.close)
         self.browse_button.clicked.connect(self.browse_game_directory)
-
+    
     def list_langs(self) -> List[str]:
         langs = []
         path = Path('resources') / "i18n"
