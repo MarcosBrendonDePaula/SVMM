@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 import shutil, i18n
-import os
+import os, logging
 
 from PyQt6.QtWidgets import (
     QSizePolicy, QMenu ,QSystemTrayIcon, 
@@ -16,6 +16,7 @@ from PyQt6.QtCore import Qt, QThread, pyqtSignal, QSize
 from src.config import Config
 from src.game import Game
 from src.modpack import Modpack
+from src.infos import Infos
 from views.modpack_config import ModpackConfigWindow
 from views.config import Config as ConfigView
 from src.tools import (Converter, Resources)
@@ -31,6 +32,8 @@ class GameThread(QThread):
         self.finished.emit()
 
 class MenuView(QWidget):
+    
+    ICON_SCALE = 0.9
     
     def __init__(self):
         super().__init__()
@@ -200,9 +203,9 @@ class MenuView(QWidget):
             modpack:Modpack = self.modpacks_map[selected_item.data(Qt.ItemDataRole.UserRole)]  # Obtém o objeto Modpack associado ao item
             try:
                 shutil.rmtree(modpack.folder_path)
-                print(f"Folder '{modpack.folder_path}' and its contents have been removed recursively.")
+                logging.info(f"Folder '{modpack.folder_path}' and its contents have been removed recursively.")
             except Exception as e:
-                print(f"An error occurred while removing the folder: {e}")
+                logging.error(f"An error occurred while removing the folder: {e}")
                 
             self.ListAllModpacks()
             if list_widget.count() > 0:  # Verifica se a lista não está vazia
@@ -306,16 +309,14 @@ class MenuView(QWidget):
         # Adicionar botão de criar modpack
         create_button = QPushButton(i18n.t(f'btn.create'))
         create_button.clicked.connect(self.create_modpack)
-        self.define_button_icon(create_button, 'Add File.png', (45,45), False)
+        self.define_button_icon(create_button, 'Add File.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
         layout.addWidget(create_button, 0, 0, 1, 1)
         
         # Adicionar botão de criar modpack
         connect_button = QPushButton(i18n.t(f'btn.connect'))
-        self.define_button_icon(connect_button, 'Add Link.png', (45,45), False)
+        self.define_button_icon(connect_button, 'Add Link.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
         connect_button.clicked.connect(self.create_remote_modpack)
         layout.addWidget(connect_button, 0, 1, 1, 1)
-        
-        
         
         # Adicione os botões
         self.play_button = QPushButton(i18n.t(f'btn.play'))
@@ -323,9 +324,9 @@ class MenuView(QWidget):
         self.remove_button = QPushButton(i18n.t(f'btn.remove'))
         
 
-        self.define_button_icon(self.play_button, 'Play.png', (45,45), False)
-        self.define_button_icon(self.edit_button, 'Edit.png', (45,45), False)
-        self.define_button_icon(self.remove_button, 'Delete.png', (45,45), False)
+        self.define_button_icon(self.play_button, 'Play.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
+        self.define_button_icon(self.edit_button, 'Edit.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
+        self.define_button_icon(self.remove_button, 'Delete.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
         
         # Associe funções aos botões, se necessário
         self.play_button.clicked.connect(self.play_modpack)
@@ -341,18 +342,21 @@ class MenuView(QWidget):
         self.info_layout.addLayout(button_layout, 4, 0, 1, 2, alignment=Qt.AlignmentFlag.AlignCenter)
         
         #config btn
-        self.config_btn_size = (20,20)
+        self.config_btn_size = (int(20 * self.ICON_SCALE), int(20 * self.ICON_SCALE))
         self.config_button = QPushButton()
         self.config_button.clicked.connect(self.show_config)
         self.define_button_icon(self.config_button, 'Settings.png', (self.config_btn_size[0],self.config_btn_size[1]))
         self.config_button.setToolTip(i18n.t('btn.config'))
         
         layout.addWidget(self.config_button, 6, 0, 1, 1)
-        #----------------------------------------------------------
         
+        self.version_label = QLabel(Infos.version)
+        layout.addWidget(self.version_label, 6, 3, 1, 1, alignment=Qt.AlignmentFlag.AlignRight)
+        
+        #----------------------------------------------------------
         self.share_button = QPushButton()
         self.setToolTip(i18n.t(f'btn.share'))
-        self.define_button_icon(self.share_button, 'Share.png', (60,55), True)
+        self.define_button_icon(self.share_button, 'Share.png', ((int(60 * self.ICON_SCALE), int(55 * self.ICON_SCALE))), True)
         self.share_button.clicked.connect(self.share_button_clicked)
         layout.addWidget(self.share_button,0,3,1,1)
         self.share_button.setToolTip(i18n.t('btn.share.tooltipe'))
@@ -366,7 +370,7 @@ class MenuView(QWidget):
             list_widget.setCurrentRow(0)  # Seleciona o primeiro item da lista
         
         self.setGeometry(100, 100, 400, 250)
-        self.setWindowTitle('')
+        self.setWindowTitle('Modpack Manager')
         self.show()
     
     def share_button_clicked(self):

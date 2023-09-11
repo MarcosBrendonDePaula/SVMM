@@ -5,7 +5,10 @@ import threading
 from pathlib import Path
 from src.mod import Mod
 from src.config import Config
+from src.infos import Infos
 from src.tools import JasonAutoFix,HashMap,ModpackApi,Extractor
+import logging
+
 from tqdm import tqdm
 import math
 
@@ -19,6 +22,9 @@ class Modpack(QObject):
     def __init__(self, name, image="", _uuid="", token="", version="0.0.0", base_directory=""):
         """Inicializa uma instância da classe Modpack."""
         super().__init__()
+        
+        self.logger = logging.getLogger(f'Modpack-{name}')
+        
         f_save = False
         if _uuid == "":
             _uuid = uuid.uuid4().hex
@@ -236,7 +242,7 @@ class Modpack(QObject):
         try:
             Extractor.extract(file, os.path.join(temp_dir, ''))
         except Exception as e:
-            print(e)
+            self.logger.error(f'{e}')
             return
         
         self._fix_folder_names(temp_dir)
@@ -250,14 +256,15 @@ class Modpack(QObject):
             if not os.path.exists(mod_destination):
                 shutil.move(mod_path, mod_destination)
             else:
-                print(f"O mod '{mod_name}' já está instalado.")
+                self.logger.info(f"The mod '{mod_name}' is already installed.")
         
         # Remover a pasta pai onde os mods estavam originalmente
         try:
             shutil.rmtree(temp_dir)
-            print(f"Diretório '{temp_dir}' removido após a instalação dos mods.")
+            self.logger.info(f"Directory '{temp_dir}' removed after installing mods.")
         except Exception as e:
-            print(f"Erro ao remover pasta temporária '{temp_dir}':", e)
+            self.logger.error(f"Error while removing temporary folder '{temp_dir}': {e}")
+
 
     def _fix_folder_names(self, source_folder):
 
@@ -325,7 +332,7 @@ class Modpack(QObject):
                     missing_dependencies.append(dependency_unique_id)
         
         if missing_dependencies:
-            print(f"Missing dependencies for mod '{mod.name}': {', '.join(missing_dependencies)}")
+            self.logger.error(f"Missing dependencies for mod '{mod.name}': {', '.join(missing_dependencies)}")
             return False
             
         return True
@@ -478,7 +485,7 @@ class Modpack(QObject):
         
         def download_file(file_path):
             if file_path.lower().endswith("desktop.ini"):
-                print(f"Ignoring {file_path}...")
+                self.logger.info(f"Ignoring {file_path}...")
                 return
 
             res = self.api.download_modpack_file(self._uuid, file_path)
@@ -489,8 +496,16 @@ class Modpack(QObject):
 
                 with local_file_path.open('wb') as local_file:
                     local_file.write(content)
-                    
-        max_connections = 20
+       
+        max_connections = 25
+        try:
+            conf = Config()
+            max_connections = int(conf.get('SYNCAPI', 'max_connections'))
+            if max_connections > Infos.limit_connections:
+                max_connections = Infos.limit_connections
+        except:
+            max_connections = 25
+        
         download_tasks = []
         local_hash_map = HashMap(self.folder_path).hashmap
         
