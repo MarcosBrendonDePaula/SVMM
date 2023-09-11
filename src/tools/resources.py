@@ -5,9 +5,8 @@ class Resources:
     
     @staticmethod
     def get_image(file = "")->QPixmap:
-        path = Resources.PATH / "img" / file
-        pixmap = QPixmap()
-        pixmap.load(path)
+        path:Path = Resources.PATH / "img" / file
+        pixmap = QPixmap(str(path))
         return pixmap
     
     @staticmethod

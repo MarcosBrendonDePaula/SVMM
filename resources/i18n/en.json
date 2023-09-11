@@ -9,6 +9,9 @@
         "btn.share": "Share Modpack",
         "btn.share.tooltipe": "Click to copy uuid",
         "btn.config": "Config",
+        "title.create.modpack": "Create Modpack",
+        "title.create.modpack.name": "Name of your modpack",
+        "title.create.modpack.create": "Create",
         "mp.btn.save": "SAVE",
         "mp.btn.download": "DOWNLOAD CHANGES",
         "mp.btn.upload": "UPLOAD CHANGES",
@@ -29,14 +32,19 @@
         "Config.label.game_path": "Game Path:",
         "Config.label.language": "Language:",
         "Config.label.log_level": "Log Level:",
-        "Config.label.sync_api": "Sync API:",
+        "Config.label.sync_api": "API URL:",
+        "Config.label.sync_api.max_con": "MaxConnections:",
         "Config.btn.find": "Find",
         "Config.btn.salve_restart": "Save and Restart",
         "Config.btn.cancel": "Cancel",
+        "Config.btn.contributors": "Contributors",
         "remote.window.title": "Modpack Connector",
         "remote.label.modpack_uuid": "MODPACK UUID",
         "remote.btn.connect": "Connect Modpack",
-        "remote.error.uuid": "Please check the provided UUID"
+        "remote.error.uuid": "Please check the provided UUID",
+        "contributors.title": "Contributors",
+        "contributors.text": "Contributors",
+        "about.text" : ""
     }
     
 }

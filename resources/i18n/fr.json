@@ -7,10 +7,15 @@
         "btn.play": "JOUER",
         "btn.edit": "ÉDITER",
         "btn.share": "Partager Modpack",
+        "btn.share.tooltipe": "Cliquez pour copier l'UUID",
+        "btn.config": "Configuration",
+        "title.create.modpack": "Créer Modpack",
+        "title.create.modpack.name": "Nom de votre Modpack",
+        "title.create.modpack.create": "Créer",
         "mp.btn.save": "ENREGISTRER",
         "mp.btn.download": "TÉLÉCHARGER LES MODIFICATIONS",
         "mp.btn.upload": "TÉLÉCHARGER LES MODIFICATIONS",
-        "mp.btn.mod.install": "INSTALLER LES MODS",
+        "mp.btn.mod.install": "INSTALLER DES MODS",
         "mp.btn.mod.enable.mods": "ACTIVER TOUS LES MODS",
         "mp.btn.mod.disable.mods": "DÉSACTIVER TOUS LES MODS",
         "mp.btn.mod.save": "ENREGISTRER LES MODIFICATIONS",
@@ -27,14 +32,18 @@
         "Config.label.game_path": "Chemin du jeu :",
         "Config.label.language": "Langue :",
         "Config.label.log_level": "Niveau de journalisation :",
-        "Config.label.sync_api": "API de synchronisation :",
+        "Config.label.sync_api": "URL de l'API :",
+        "Config.label.sync_api.max_con": "Connexions maximales :",
         "Config.btn.find": "Trouver",
         "Config.btn.salve_restart": "Enregistrer et redémarrer",
         "Config.btn.cancel": "Annuler",
+        "Config.btn.contributors": "Contributeurs",
         "remote.window.title": "Connecteur Modpack",
         "remote.label.modpack_uuid": "UUID DU MODPACK",
         "remote.btn.connect": "Connecter Modpack",
-        "remote.error.uuid": "Veuillez vérifier l'UUID fournie"
-    }
-    
+        "remote.error.uuid": "Veuillez vérifier l'UUID fournie",
+        "contributors.title": "Contributeurs",
+        "contributors.text": "Contributeurs",
+        "about.text": ""
+    }    
 }

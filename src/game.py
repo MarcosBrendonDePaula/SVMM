@@ -2,8 +2,7 @@ import os
 import shlex
 from pathlib import Path
 from src.config import Config
-
-
+import logging
 class Game:
     """Classe para gerenciar o jogo e executar comandos relacionados ao jogo usando as configurações definidas."""
 
@@ -12,6 +11,7 @@ class Game:
         self.conf = Config()
         self.conf.load()
         self.running = False
+        self.logger = logging.getLogger(f'Game')
     
     def is_running(self):
         return self.running
@@ -21,7 +21,7 @@ class Game:
         game_path = self.conf.get('GAME', 'gamepath')
         mods_folder = self.conf.get('GAME', 'modsfolder')
 
-        print(game_path)
+        self.logger.info(f"Game Path: {game_path}")
 
         if game_path and mods_folder:
             exe_path = Path(game_path) / "StardewModdingAPI.exe"
@@ -31,7 +31,9 @@ class Game:
             self.running = True
             os.system(f'"{command}"')
         else:
-            print("Game path or mods folder not set. Please configure them.")
+            self.logger.info("Game path or mods folder not set. Please configure them.")
+            return -1
+        return 0
 
     def set_mods_folder(self, path):
         """Define o diretório dos mods nas configurações e salva as alterações."""

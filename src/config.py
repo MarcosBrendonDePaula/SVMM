@@ -4,6 +4,7 @@ from pathlib import Path
 import platform
 import psutil
 import i18n
+import logging
 
 class Config:
     """Classe para gerenciar configurações do jogo usando um padrão Singleton."""
@@ -19,6 +20,7 @@ class Config:
 
     def __init__(self):
         """Inicializa a classe Config com as configurações padrão."""
+        self.logger = logging.getLogger(f'Config')
         pass
 
     def set(self, section, key, value):
@@ -49,6 +51,8 @@ class Config:
         self.set_default_game()
         self.set_default_svmg()
         
+        self.configure_logger(self.get('CONSOLE', 'loglevel'))
+        
         lang = self.get('SVMG', 'lang')
         i18n.config.set('locale', lang)
         i18n.set('filename_format', '{format}')
@@ -65,6 +69,7 @@ class Config:
         self.ensure_config_field('GAME', 'modsfolder', 'Mods')
         self.ensure_config_field('SYNCAPI', 'host', 'svmgapi.marcosbrendon.com:3000')
         self.ensure_config_field('SYNCAPI', 'protocol', 'http')
+        self.ensure_config_field('SYNCAPI', 'max_connections', '20')
 
 
     def ensure_config_field(self, section, key, default_value):
@@ -86,7 +91,7 @@ class Config:
                 with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, steam_registry_path) as key:
                     return winreg.QueryValueEx(key, 'InstallPath')[0]
             except Exception as e:
-                print(f"Erro ao acessar o registro do Windows: {e}")
+                self.logger.error(f"Error accessing the Windows registry: {e}")
         elif platform.system() == 'Linux':
             home_folder = os.path.expanduser("~")
             steam_path = os.path.join(home_folder, '.steam', 'steam')
@@ -125,3 +130,24 @@ class Config:
                 if os.path.exists(full_path):
                     return full_path
         return ''
+
+    def configure_logger(self, loglevel):
+        # Mapeamento dos níveis de log
+        loglevel_map = {
+            'DEBUG': logging.DEBUG,
+            'INFO': logging.INFO,
+            'WARNING': logging.WARNING,
+            'ERROR': logging.ERROR,
+            'CRITICAL': logging.CRITICAL,
+        }
+
+        # Verifique se o nível de log fornecido é válido, caso contrário, use 'INFO' como padrão
+        level = loglevel_map.get(loglevel, logging.INFO)
+
+        # Configuração do logger
+        logging.basicConfig(
+            level=level,  # Defina o nível de log com base no mapeamento
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            filename='logs.log'  # Especifique o nome do arquivo de log (opcional)
+        )
+        logging.captureWarnings(True)

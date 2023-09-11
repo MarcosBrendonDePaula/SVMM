@@ -2,6 +2,7 @@ import os
 import hashlib
 import json
 import time
+import logging
 from tqdm import tqdm
 
 def count_files(directory):
@@ -10,7 +11,7 @@ def count_files(directory):
         count += len(files)
     return count
 
-def calculate_file_hash(self, file_path):
+def calculate_file_hash(file_path):
     block_size = 65536  # 64 KB blocks
     hasher = hashlib.sha256()
 
@@ -33,6 +34,7 @@ class HashMap:
         :param load_existing: Define se deve carregar um hashmap existente de um arquivo JSON.
         :param show_progress: Define se deve exibir o progressbar durante a criação do hashmap.
         """
+        self.logger = logging.getLogger('HashMap')
         self.directory = directory
         self.hashmap = {}
         self.parent_changes = set()  # Conjunto para armazenar as pastas pai que tiveram mudanças
@@ -108,7 +110,7 @@ class HashMap:
 
         end_time = time.time()
         self.elapsed_time = end_time - start_time
-        print(f"Tempo decorrido: {self.elapsed_time:.2f} segundos")
+        self.logger.info(f"Elapsed time: {self.elapsed_time:.2f} seconds")
         return hashmap
 
     def compare(self, other_hashmap):
@@ -160,7 +162,7 @@ class HashMap:
             with open(file_path, "r") as f:
                 self.hashmap = json.load(f)
         except FileNotFoundError:
-            print(f"Arquivo {file_path} não encontrado. Criando novo hashmap.")
+            self.logger.info(f"File {file_path} not found. Creating a new hashmap.")
             self.hashmap = self.create_hashmap()
     
     def load_from_json(self, json:json):

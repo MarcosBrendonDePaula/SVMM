@@ -2,7 +2,7 @@ import os
 import winreg
 from pyunpack import Archive
 import subprocess
-
+import logging
 class Extractor:
     @staticmethod
     def get_winrar_installation_path():
@@ -19,12 +19,12 @@ class Extractor:
     def extract_rar(rar_file, output_path):
         winrar_path = Extractor.get_winrar_installation_path()
         if not winrar_path:
-            print("WinRAR não foi encontrado. Certifique-se de que o WinRAR está instalado e registrado no registro do Windows.")
+            logging.getLogger('Extractor').error("WinRAR was not found. Make sure WinRAR is installed and registered in the Windows registry.")
             return
         try:
             subprocess.run([winrar_path, 'x', rar_file, output_path], shell=True, check=True)
         except subprocess.CalledProcessError as e:
-            print(f"Ocorreu um erro ao converter o arquivo: {e}")
+            logging.getLogger('Extractor').error(f"An error occurred while converting the file: {e}")
         finally:
             pass
 
@@ -38,5 +38,5 @@ class Extractor:
         elif is_zip:
             Archive(file).extractall(out)
         else:
-            print("Formato de arquivo não suportado")
+            logging.getLogger('Extractor').error("Unsupported file format")
             return
