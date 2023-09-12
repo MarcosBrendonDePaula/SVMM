@@ -1,6 +1,6 @@
 import requests
-from src.config import Config
 from src.tools import JasonAutoFix
+import logging
 class ModpackApi:
     """
     Uma classe que oferece métodos para interagir com uma API de modpacks.
@@ -18,6 +18,7 @@ class ModpackApi:
         :param base_url: A URL base da API.
         """
         self.base_url = base_url
+        self.logger = logging.getLogger(f'Sync-Api')
 
     def create_modpack_directory(self, uuid, token):
         """
@@ -29,6 +30,8 @@ class ModpackApi:
         """
         url = f"{self.base_url}/createModpackDirectory/{uuid}/{token}"
         response = requests.post(url)
+        self.logger.debug(f'Creating directory for the modpack (UUID: {uuid}, Token: {token})')
+        self.logger.debug(f'Request status: {response.status_code}')
         return {'status': response.status_code , 'json':response.json(), 'response':response}
     
     def upload_file(self, uuid, token, remoteDirfile, file):
@@ -49,6 +52,9 @@ class ModpackApi:
         files = {"file": file}
         # Envia a requisição POST para a API de upload
         response = requests.post(url, files=files, headers=headers)
+        self.logger.debug(f'Uploading a file to the modpack (UUID: {uuid}, Token: {token})')
+        self.logger.debug(f'Remote file path: {remoteDirfile}')
+        self.logger.debug(f'Request status: {response.status_code}')
         try:
             json = response.json()
         except:
@@ -75,6 +81,9 @@ class ModpackApi:
             files = {"file": zip_file}
             # Envia a requisição POST para a API de upload e descompactação
             response = requests.post(url, files=files, headers=headers)
+            self.logger.debug(f'Checking ownership (UUID: {uuid}, Token: {token})')
+            self.logger.debug(f'Request status: {response.status_code}')
+
         try:
             json = response.json()
         except:
@@ -152,31 +161,16 @@ class ModpackApi:
         """
         url = f"{self.base_url}/isOwner/{uuid}"
         try:
-            response = requests.post(url, json={"token": token})
+            response = requests.post(url, json={"token": token}, timeout=(3, 3))
             if response.json()['code'] == -1:
                 return True
             if response.status_code == 200:
                 return True
             else:
                 return False
-        except:
+        except requests.Timeout:
+            self.logger.error("The request timed out after 2 seconds")
+            return False  # A solicitação atingiu o tempo limite de 2 segundos
+        except Exception as e:
+            self.logger.error(f"HTTP request error: {e}")
             return False
-
-# Exemplo de uso da classe ModpackApi
-if __name__ == "__main__":
-    api = ModpackApi("http://localhost:3000")  # Substitua pela URL real da sua API
-
-    # Criar um diretório para uma nova modpack
-    create_response = api.create_modpack_directory("ihuhyuighyugyu", "4a5cbd28f070c2cf241648e6f9bf2e2b7bd3285e508a4c2526b4892e0da6ea95d5aa0453629011835cc9f10b81bab145ecad720372843db6a3209144d4e51f72")
-    info_response = api.get_modpack_info("ihuhyuighyugyu")
-    print(info_response)
-    # # Enviar um arquivo para a pasta da modpack
-    with open("modpacks/asdasd/modpack.json", "rb") as file:
-        upload_response = api.upload_file("ihuhyuighyugyu", 
-                                          "4a5cbd28f070c2cf241648e6f9bf2e2b7bd3285e508a4c2526b4892e0da6ea95d5aa0453629011835cc9f10b81bab145ecad720372843db6a3209144d4e51f72", 
-                                          "modpack.json", 
-                                          file)
-        print(upload_response)
-
-    # # Obter informações sobre uma modpack
-

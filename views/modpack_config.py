@@ -1,16 +1,16 @@
 import os
-import base64, i18n
+import base64, i18n, logging
 from PyQt6.QtWidgets import (
     QDialog, QLabel, QLineEdit, QPushButton, QVBoxLayout, QListWidgetItem,
-    QListWidget, QHBoxLayout, QFileDialog, QMessageBox, QProgressBar
+    QListWidget, QHBoxLayout, QFileDialog, QMessageBox, QProgressBar, QSizePolicy
 )
 from PyQt6.QtGui import QPixmap, QImage, QImageReader, QColor, QBrush, QCursor, QIcon
 from PyQt6.QtCore import Qt, QSize, QThread
 
 from src.mod import Mod
-from src.tools import (Converter,Extractor,JasonAutoFix)
+from src.tools import (Converter, Resources)
 from src.modpack import Modpack
-
+from PyQt6.QtCore import pyqtSignal
 
 class WorkerUpload(QThread):
     def __init__(self, modpack:Modpack):
@@ -29,6 +29,11 @@ class WorkerDownload(QThread):
         self.modpack.update_modpack()
 
 class ModpackConfigWindow(QDialog):
+    
+    ICON_SCALE = 0.9
+    
+    updateSignal = pyqtSignal(dict)
+    
     def __init__(self, modpack:Modpack):
         super().__init__()
         self.modpack = modpack
@@ -48,7 +53,7 @@ class ModpackConfigWindow(QDialog):
 
         name_label = QLabel(i18n.t(f'mp.name'))
         self.name_edit = QLineEdit("")
-        self.name_edit.textEdited.connect(self.save)
+        self.name_edit.editingFinished.connect(self.save)
         
         modpack_edit_layout.addWidget(name_label)
         modpack_edit_layout.addWidget(self.name_edit)
@@ -101,26 +106,31 @@ class ModpackConfigWindow(QDialog):
         modpack_edit_layout.addWidget(self.progress_bar)
         
         self.send_button = QPushButton(i18n.t(f'mp.btn.upload'))
+        self.define_button_icon(self.send_button, 'UploadToCloud.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
         self.send_button.clicked.connect(self.upload_modpack)
         
         if self.modpack.is_owner:
             modpack_edit_layout.addWidget(self.send_button) 
         self.download_button = QPushButton(i18n.t(f'mp.btn.download'))
         self.download_button.clicked.connect(self.download_modpack)
+        self.define_button_icon(self.download_button, 'DownloadFromCloud.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
         modpack_edit_layout.addWidget(self.download_button)
 
         install_mod_button = QPushButton(i18n.t(f'mp.btn.mod.install'))
         install_mod_button.clicked.connect(self.install_mod)
+        self.define_button_icon(install_mod_button, 'Enter.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
         modpack_edit_layout.addWidget(install_mod_button)
         
         # Habilitar todos os mods
         enable_all_button = QPushButton(i18n.t(f'mp.btn.mod.enable.mods'))
         enable_all_button.clicked.connect(self.enable_all_mods)
+        self.define_button_icon(enable_all_button, 'Open View.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
         modpack_edit_layout.addWidget(enable_all_button)
 
         # Desabilitar todos os mods
         enable_all_button = QPushButton(i18n.t(f'mp.btn.mod.disable.mods'))
         enable_all_button.clicked.connect(self.disable_all_mods)
+        self.define_button_icon(enable_all_button, 'Delete View.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
         modpack_edit_layout.addWidget(enable_all_button)
         
         # Agora as informações salvam ao serem mudadas.
@@ -130,12 +140,14 @@ class ModpackConfigWindow(QDialog):
         self.show_info()
         layout.addLayout(modpack_edit_layout)
         self.setLayout(layout)
+        self.setWindowIcon(QIcon(Resources.get_image("Open Parcel.png")))
         self.setWindowTitle("Modpack Editor")
     
     def save(self):
         self.modpack.image = self.image or self.modpack.image 
         self.modpack.name = self.name_edit.text()
         self.modpack.save()
+        self.updateSignal.emit({})
     
     def update_progress(self, args:dict):
         if args['step'] == 0:
@@ -165,6 +177,7 @@ class ModpackConfigWindow(QDialog):
             self.update_mods_list()
             self.modpack.reload()
             self.show_info()
+            self.save()
     
     def show_info(self):
         self.name_edit.setText(self.modpack.name)
@@ -173,7 +186,7 @@ class ModpackConfigWindow(QDialog):
             try:
                 pixmap = Converter.base64_to_QPixmap(self.modpack.image)
             except Exception as e:
-                print("Erro ao carregar a imagem:", e)
+                logging.error(f"Error loading the image:{e}")
 
         if not pixmap == None:
             # Redimensionar a imagem como antes
@@ -302,3 +315,19 @@ class ModpackConfigWindow(QDialog):
                 self.modpack.install_mod(file_path)
             self.update_mods_list()
             QMessageBox.information(self, "Mods Instalados", "Os mods foram instalados com sucesso.")
+
+    def define_button_icon(self, button:QPushButton, resource_img_name, size=(45,45), usePolice = True):
+        icon = QIcon(f"{Resources.get_image_path(resource_img_name)}")
+        icon_pixmap = icon.pixmap(size[0], size[1])
+        button.setIcon(icon)
+        button.setIconSize(icon_pixmap.size())
+        button.setStyleSheet('text-align: left;')
+        if usePolice:
+            self.define_button_icon_pollice(button, size)
+    
+    def define_button_icon_pollice(self, button:QPushButton, size=(45,45)):
+        size_policy = button.sizePolicy()
+        size_policy.setHorizontalPolicy(QSizePolicy.Policy.Fixed)
+        size_policy.setVerticalPolicy(QSizePolicy.Policy.Fixed)
+        button.setSizePolicy(size_policy)
+        button.setFixedSize(size[0], size[1])
