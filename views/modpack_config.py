@@ -31,6 +31,7 @@ class WorkerDownload(QThread):
 class ModpackConfigWindow(QDialog):
     
     ICON_SCALE = 0.9
+    BUTTON_SCALE = 1
     
     updateSignal = pyqtSignal(dict)
     
@@ -39,12 +40,16 @@ class ModpackConfigWindow(QDialog):
         self.modpack = modpack
         self.initUi()
 
+    def button_size_rule(self, button:QPushButton):
+        button.setMinimumWidth(180 * ModpackConfigWindow.BUTTON_SCALE)
+    
     def initUi(self):
         layout = QHBoxLayout()
         self.image = None
         # Parte esquerda: Lista de mods com caixas de seleção
         self.mods_list_widget = QListWidget()
         self.mods_list_widget.itemDoubleClicked.connect(self.item_double_clicked)
+        self.mods_list_widget.itemClicked.connect(self.item_selected)
         self.update_mods_list()  # Atualiza a lista de mods
         layout.addWidget(self.mods_list_widget)
 
@@ -62,31 +67,19 @@ class ModpackConfigWindow(QDialog):
         self.image_edit = QLineEdit(self.modpack.image)
         modpack_edit_layout.addWidget(image_label)
 
-        # Layou horontal para ancorar botao de trocar imagem ao topo na direita
+        # Layou horizontal para ancorar botao de trocar imagem ao topo na direita
         hbox_layout = QHBoxLayout()
 
         self.change_image_button = QPushButton()
-        # self.change_image_button.setAlignment(Qt.AlignmentFlag.AlignRight)
-        # print(os.path.abspath("") + "\\resources\img")
-        
-        # self.change_image_button.setPixmap(QPixmap(os.path.abspath("") + "\\resources\img\camera_icon.png").scaled(30, 30, Qt.AspectRatioMode.KeepAspectRatio))
-
-        self.change_image_button.setIcon(QIcon(os.path.abspath("") + "\\resources\img\camera_icon.png"))
-
-        self.change_image_button.setIconSize(QSize(30, 30))
+        self.define_button_icon(self.change_image_button, 'camera_icon.png', (int(40 * self.ICON_SCALE), int(40 * self.ICON_SCALE)), False)
 
         self.change_image_button.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-
         self.change_image_button.setToolTip(i18n.t(f'mp.change.image'))
-        
         self.change_image_button.clicked.connect(self.select_image)
-
         self.change_image_button.setStyleSheet('border: none;')
-
         hbox_layout.addStretch()
 
         hbox_layout.addWidget(self.change_image_button)
-
         modpack_edit_layout.addLayout(hbox_layout)
 
         self.image_preview = QLabel()
@@ -96,10 +89,6 @@ class ModpackConfigWindow(QDialog):
         modpack_edit_layout.addWidget(self.image_preview)
         #Ajustar imagem ao topo caso a janela seja redimensionada
         modpack_edit_layout.addStretch()
-
-        # select_image_button = QPushButton('Selecionar Imagem')
-        # select_image_button.clicked.connect(self.select_image)
-        # modpack_edit_layout.addWidget(select_image_button)
         
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setVisible(False)
@@ -109,34 +98,59 @@ class ModpackConfigWindow(QDialog):
         self.define_button_icon(self.send_button, 'UploadToCloud.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
         self.send_button.clicked.connect(self.upload_modpack)
         
+        hbox_layout_mods_upload_download = QHBoxLayout()
+        hbox_layout_mods_upload_download.addStretch()
         if self.modpack.is_owner:
-            modpack_edit_layout.addWidget(self.send_button) 
+            self.button_size_rule(self.send_button)
+            hbox_layout_mods_upload_download.addWidget(self.send_button)
+        
         self.download_button = QPushButton(i18n.t(f'mp.btn.download'))
+        self.button_size_rule(self.download_button)
         self.download_button.clicked.connect(self.download_modpack)
         self.define_button_icon(self.download_button, 'DownloadFromCloud.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
-        modpack_edit_layout.addWidget(self.download_button)
-
+        hbox_layout_mods_upload_download.addWidget(self.download_button)
+        hbox_layout_mods_upload_download.addStretch()
+        modpack_edit_layout.addLayout(hbox_layout_mods_upload_download)
+        
+        
+        hbox_layout_mods = QHBoxLayout()
+        hbox_layout_mods.addStretch()
         install_mod_button = QPushButton(i18n.t(f'mp.btn.mod.install'))
         install_mod_button.clicked.connect(self.install_mod)
+        self.button_size_rule(install_mod_button)
         self.define_button_icon(install_mod_button, 'Enter.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
-        modpack_edit_layout.addWidget(install_mod_button)
+        hbox_layout_mods.addWidget(install_mod_button)
+        
+        self.delete_mod_button = QPushButton(i18n.t(f'mp.btn.mod.delete'))
+        self.delete_mod_button.clicked.connect(self.delete_mod)
+        self.button_size_rule(self.delete_mod_button)
+        self.define_button_icon(self.delete_mod_button, 'Delete.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
+        self.delete_mod_button.setDisabled(True)
+        hbox_layout_mods.addWidget(self.delete_mod_button)
+        hbox_layout_mods.addStretch()
+        
+        modpack_edit_layout.addLayout(hbox_layout_mods)
+        
         
         # Habilitar todos os mods
+        hbox_layout_mods_all = QHBoxLayout()
+        hbox_layout_mods_all.addStretch()
         enable_all_button = QPushButton(i18n.t(f'mp.btn.mod.enable.mods'))
+        self.button_size_rule(enable_all_button)
         enable_all_button.clicked.connect(self.enable_all_mods)
         self.define_button_icon(enable_all_button, 'Open View.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
-        modpack_edit_layout.addWidget(enable_all_button)
+        hbox_layout_mods_all.addWidget(enable_all_button)
 
         # Desabilitar todos os mods
-        enable_all_button = QPushButton(i18n.t(f'mp.btn.mod.disable.mods'))
-        enable_all_button.clicked.connect(self.disable_all_mods)
-        self.define_button_icon(enable_all_button, 'Delete View.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
-        modpack_edit_layout.addWidget(enable_all_button)
-        
-        # Agora as informações salvam ao serem mudadas.
-        # confirm_button = QPushButton(i18n.t(f'mp.btn.mod.save'))
-        # confirm_button.clicked.connect(self.confirm_changes)
-        # modpack_edit_layout.addWidget(confirm_button)
+        disable_all_button = QPushButton(i18n.t(f'mp.btn.mod.disable.mods'))
+        disable_all_button.clicked.connect(self.disable_all_mods)
+        self.button_size_rule(disable_all_button)
+        self.define_button_icon(disable_all_button, 'Delete View.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
+        hbox_layout_mods_all.addWidget(disable_all_button)
+        hbox_layout_mods_all.addStretch()
+        modpack_edit_layout.addLayout(hbox_layout_mods_all)
+
+
         self.show_info()
         layout.addLayout(modpack_edit_layout)
         self.setLayout(layout)
@@ -316,6 +330,18 @@ class ModpackConfigWindow(QDialog):
             self.update_mods_list()
             QMessageBox.information(self, "Mods Instalados", "Os mods foram instalados com sucesso.")
 
+    def delete_mod(self):
+        selected_items = self.mods_list_widget.selectedItems()
+        item = selected_items[0].data(Qt.ItemDataRole.UserRole)
+        self.modpack.delete_mod(item)
+        self.delete_mod_button.setDisabled(True)
+        self.update_mods_list()
+        pass
+    
+    def item_selected(self, item):
+        self.delete_mod_button.setDisabled(False)
+        pass
+    
     def define_button_icon(self, button:QPushButton, resource_img_name, size=(45,45), usePolice = True):
         icon = QIcon(f"{Resources.get_image_path(resource_img_name)}")
         icon_pixmap = icon.pixmap(size[0], size[1])
