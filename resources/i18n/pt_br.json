@@ -5,6 +5,7 @@
         "btn.create": "CRIAR PACOTE DE MODS",
         "btn.remove": "REMOVER",
         "btn.play": "JOGAR",
+        "btn.play.running": "JOGANDO",
         "btn.edit": "EDITAR",
         "btn.share": "Compartilhar Pacote de Mods",
         "btn.share.tooltipe": "Clique para copiar o UUID",

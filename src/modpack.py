@@ -117,6 +117,9 @@ class Modpack(QObject):
         for mod in self.list_enabled_mods():
             self.disable_mod(mod)
 
+    def delete_mod(self, mod:Mod):
+        shutil.rmtree(mod.mod_folder_path)
+    
     def disable_mod(self, mod_name):
         """
         Desabilita um mod, movendo-o da pasta 'mods_enabled' para 'mods_disabled'.

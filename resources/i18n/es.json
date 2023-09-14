@@ -31,7 +31,7 @@
         "mp.btn.share.copied": "El UUID se ha copiado al portapapeles. ¡Envíalo a tu amigo!",
         "mp.btn.share.copied.window.title": "UUID Copiado",
         "Config.window.title": "Configuración",
-        "Config.label.game_path": "Ruta del juego:",
+        "Config.label.game_path": "Ruta del Juego:",
         "Config.label.language": "Idioma:",
         "Config.label.log_level": "Nivel de Registro:",
         "Config.label.sync_api": "URL de la API:",
