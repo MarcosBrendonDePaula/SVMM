@@ -5,7 +5,7 @@ import platform
 import psutil
 import i18n
 import logging
-
+from src.tools import Steam
 class Config:
     """Classe para gerenciar configurações do jogo usando um padrão Singleton."""
 
@@ -50,6 +50,7 @@ class Config:
         self.set_default_console()
         self.set_default_game()
         self.set_default_svmg()
+        self.set_default_steam()
         
         self.configure_logger(self.get('CONSOLE', 'loglevel'))
         
@@ -65,12 +66,19 @@ class Config:
         self.ensure_config_field('CONSOLE', 'loglevel', 'INFO')
 
     def set_default_game(self):
-        self.ensure_config_field('GAME', 'gamepath', self.find_stardew_valley_installation_path())
+        self.ensure_config_field('GAME', 'path', self.find_stardew_valley_installation_path())
         self.ensure_config_field('GAME', 'modsfolder', 'Mods')
         self.ensure_config_field('SYNCAPI', 'host', 'svmgapi.marcosbrendon.com:3000')
         self.ensure_config_field('SYNCAPI', 'protocol', 'http')
         self.ensure_config_field('SYNCAPI', 'max_connections', '20')
-
+    
+    def set_default_steam(self):
+        STEAM_PATH = Steam.get_installation_path()
+        if STEAM_PATH:
+            self.ensure_config_field('STEAM', 'use', "true")
+        else:
+            self.ensure_config_field('STEAM', 'use', "false")
+        self.ensure_config_field('STEAM', 'path', Steam.get_installation_path() or "")
 
     def ensure_config_field(self, section, key, default_value):
         """

@@ -78,6 +78,24 @@ class Config(QDialog):
         self.layout_basico.addWidget(self.max_con_label, 5, 0)
         self.layout_basico.addWidget(self.sync_api_max_con, 5, 1, 1, 2)
 
+        # Rótulo e campo de seleção para LogLevel
+        self.label_use_steam = QLabel(i18n.t(f'Config.label.use_steam'))
+        self.use_steam = QComboBox()
+        self.use_steam.addItems(['true', 'false'])
+        self.layout_basico.addWidget(self.label_use_steam, 6, 0)
+        self.layout_basico.addWidget(self.use_steam, 6, 1, 1, 2)
+
+        # Rótulo e campo de seleção para Game Path
+        self.label_steam_path = QLabel(i18n.t(f'Config.label.steam_path'))
+        self.steam_path_input = QLineEdit()
+        self.layout_basico.addWidget(self.label_steam_path, 7, 0)
+        self.layout_basico.addWidget(self.steam_path_input, 7, 1, 1, 1)
+        
+        # Botão para procurar o arquivo StardewModdingAPI.exe
+        self.browse_steam_button = QPushButton(i18n.t(f'Config.btn.find'))
+        self.layout_basico.addWidget(self.browse_steam_button, 7, 2)
+        self.define_button_icon(self.browse_steam_button, 'Opened Folder_1', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
+        
         # Botões de ação
         self.save_button = QPushButton(i18n.t(f'Config.btn.salve_restart'))
         self.cancel_button = QPushButton(i18n.t(f'Config.btn.cancel'))
@@ -85,12 +103,12 @@ class Config(QDialog):
         self.define_button_icon(self.save_button, 'Save.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
         self.define_button_icon(self.cancel_button, 'Close Window.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
         
-        self.layout_basico.addWidget(self.save_button, 6, 0)
-        self.layout_basico.addWidget(self.cancel_button, 6, 1)
+        self.layout_basico.addWidget(self.save_button, 8, 0)
+        self.layout_basico.addWidget(self.cancel_button, 8, 1)
         
         self.contributors = QPushButton(i18n.t(f'Config.btn.contributors'))
         self.define_button_icon(self.contributors, 'People.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
-        self.layout_basico.addWidget(self.contributors, 6, 2)
+        self.layout_basico.addWidget(self.contributors, 8, 2)
         
         self.setLayout(self.layout_basico)
         self.setGeometry(100, 100, 400, 250)
@@ -100,6 +118,7 @@ class Config(QDialog):
         self.save_button.clicked.connect(self.save_and_restart)
         self.cancel_button.clicked.connect(self.close)
         self.browse_button.clicked.connect(self.browse_game_directory)
+        self.browse_steam_button.clicked.connect(self.browse_steam_directory)
         self.contributors.clicked.connect(self.show_contributors)
     
     def max_connections_validate(self, text):
@@ -129,31 +148,42 @@ class Config(QDialog):
 
     # Função para carregar informações nas configurações
     def load_info(self):
-        self.game_path_input.setText(self.config.get('GAME', 'gamepath'))
+        self.game_path_input.setText(self.config.get('GAME', 'path'))
         # self.mods_path_input.setText(self.config.get('GAME', 'modsfolder'))
         self.log_level_select.setCurrentText(self.config.get('CONSOLE', 'loglevel'))
         self.sync_api_input.setText(self.config.get('SYNCAPI', 'host'))
         self.sync_api_max_con.setText(self.config.get('SYNCAPI', 'max_connections'))
         self.language_select.setCurrentText(self.config.get('SVMG', 'lang'))
+        self.use_steam.setCurrentText(self.config.get('STEAM', 'use'))
+        self.steam_path_input.setText(self.config.get('STEAM', 'path'))
         
 
     # Função para salvar informações nas configurações e reiniciar a aplicação
     def save_and_restart(self):
-        self.config.set('GAME', 'gamepath', self.game_path_input.text())
+        self.config.set('GAME', 'path', self.game_path_input.text())
         # self.config.set('GAME', 'modsfolder', self.mods_path_input.text())
         self.config.set('CONSOLE', 'loglevel', self.log_level_select.currentText())
         self.config.set('SYNCAPI', 'host', self.sync_api_input.text())
         self.config.set('SYNCAPI', 'max_connections', self.sync_api_max_con.text())
         self.config.set('SVMG', 'lang', self.language_select.currentText())
+        self.config.set('STEAM', 'use', self.use_steam.currentText())
+        self.config.set('STEAM', 'path', self.steam_path_input.text())
         self.config.save()  # Salva as configurações
 
         # Reiniciar a aplicação
         python = sys.executable
         subprocess.Popen([python, sys.argv[0]])
-        QCoreApplication.quit()  # Fecha a aplicação
+        QCoreApplication.quit()
+        QCoreApplication.exit(0)
 
     # Função para abrir um diálogo de seleção de diretório para o Game Path
     def browse_game_directory(self):
         selected_directory = QFileDialog.getExistingDirectory(self, 'Procurar diretório do jogo')
         if selected_directory:
             self.game_path_input.setText(selected_directory)
+            
+    # Função para abrir um diálogo de seleção de diretório para o Game Path
+    def browse_steam_directory(self):
+        selected_directory = QFileDialog.getExistingDirectory(self, 'Procurar diretório da steam')
+        if selected_directory:
+            self.steam_path_input.setText(selected_directory)

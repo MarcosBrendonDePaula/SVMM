@@ -38,6 +38,8 @@
         "Config.btn.salve_restart": "Save and Restart",
         "Config.btn.cancel": "Cancel",
         "Config.btn.contributors": "Contributors",
+        "Config.label.use_steam" : "Use Steam",
+        "Config.label.steam_path": "Steam directory",
         "remote.window.title": "Modpack Connector",
         "remote.label.modpack_uuid": "MODPACK UUID",
         "remote.btn.connect": "Connect Modpack",
