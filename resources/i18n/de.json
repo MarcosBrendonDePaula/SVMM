@@ -5,10 +5,10 @@
         "btn.create": "MODPACK ERSTELLEN",
         "btn.remove": "ENTFERNEN",
         "btn.play": "SPIELEN",
-        "btn.play.running": "IN AUSFÜHRUNG",
+        "btn.play.running": "SPIELEN",
         "btn.edit": "BEARBEITEN",
         "btn.share": "Modpack teilen",
-        "btn.share.tooltipe": "Klicken Sie zum Kopieren der UUID",
+        "btn.share.tooltipe": "Klicken, um UUID zu kopieren",
         "btn.config": "Konfiguration",
         "title.create.modpack": "Modpack erstellen",
         "title.create.modpack.name": "Name Ihres Modpacks",
@@ -29,7 +29,7 @@
         "mp.btn.event.downloading": "Bitte warten...",
         "mp.btn.event.updone": "Fertig!",
         "mp.btn.share.copied": "Die UUID wurde in die Zwischenablage kopiert. Senden Sie sie an Ihren Freund!",
-        "mp.btn.share.copied.window.title": "UUID Kopiert",
+        "mp.btn.share.copied.window.title": "UUID kopiert",
         "Config.window.title": "Konfiguration",
         "Config.label.game_path": "Spielverzeichnis:",
         "Config.label.language": "Sprache:",
@@ -40,12 +40,15 @@
         "Config.btn.salve_restart": "Speichern und Neustarten",
         "Config.btn.cancel": "Abbrechen",
         "Config.btn.contributors": "Mitwirkende",
-        "remote.window.title": "Modpack-Verbindungsprogramm",
+        "Config.label.use_steam" : "Steam verwenden",
+        "Config.label.steam_path": "Steam-Verzeichnis",
+        "remote.window.title": "Modpack-Verbindung",
         "remote.label.modpack_uuid": "MODPACK UUID",
         "remote.btn.connect": "Modpack verbinden",
         "remote.error.uuid": "Bitte überprüfen Sie die bereitgestellte UUID",
         "contributors.title": "Mitwirkende",
         "contributors.text": "Mitwirkende",
-        "about.text": ""
-    }    
+        "about.text" : ""
+    }
+        
 }

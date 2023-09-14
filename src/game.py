@@ -3,6 +3,8 @@ import shlex
 from pathlib import Path
 from src.config import Config
 import logging
+
+from src.tools import Steam
 class Game:
     """Classe para gerenciar o jogo e executar comandos relacionados ao jogo usando as configurações definidas."""
 
@@ -18,9 +20,13 @@ class Game:
     
     def play(self):
         """Executa o jogo com as configurações definidas."""
-        game_path = self.conf.get('GAME', 'gamepath')
+        game_path = self.conf.get('GAME', 'path')
         mods_folder = self.conf.get('GAME', 'modsfolder')
 
+        use_steam = self.conf.get('STEAM', 'use')
+        if use_steam == "true":
+            if not Steam.is_steam_running():
+                Steam.start_steam_and_wait()
         self.logger.info(f"Game Path: {game_path}")
 
         if game_path and mods_folder:

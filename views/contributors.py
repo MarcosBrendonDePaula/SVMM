@@ -18,7 +18,8 @@ class ContributorsDialog(QDialog):
             contributor_name = contributor['name']
             contributor_github = contributor['github']
             contributor_linkedin = contributor['linkedin']
-
+            contributor_website  = contributor['website']
+            
             contributor_widget = QWidget()
             contributor_widget_layout = QHBoxLayout()  # Usamos QHBoxLayout para organizar horizontalmente
             
@@ -40,7 +41,13 @@ class ContributorsDialog(QDialog):
                 linkedin_link.setTextFormat(Qt.TextFormat.RichText)
                 linkedin_link.setOpenExternalLinks(True)
                 contributor_widget_layout.addWidget(linkedin_link)
-
+            
+            if contributor_website:
+                contributor_website = QLabel(f"<a href=\"{contributor_website}\">WebSite</a>")
+                contributor_website.setTextFormat(Qt.TextFormat.RichText)
+                contributor_website.setOpenExternalLinks(True)
+                contributor_widget_layout.addWidget(contributor_website)
+            
             contributor_widget.setLayout(contributor_widget_layout)
             contributors_layout.addWidget(contributor_widget)
 
