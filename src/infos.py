@@ -1,6 +1,6 @@
 import i18n
 class Infos():
-    version = "0.3.2-beta"
+    version = "0.4.4-beta"
     contributors = [
         {
             "name"    : "Marcos Brendon",
