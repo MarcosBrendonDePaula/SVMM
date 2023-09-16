@@ -78,7 +78,7 @@ class Config:
             self.ensure_config_field('STEAM', 'use', "true")
         else:
             self.ensure_config_field('STEAM', 'use', "false")
-        self.ensure_config_field('STEAM', 'path', Steam.get_installation_path() or "")
+        self.ensure_config_field('STEAM', 'path', STEAM_PATH or "")
 
     def ensure_config_field(self, section, key, default_value):
         """
