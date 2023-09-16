@@ -69,10 +69,13 @@ class Steam:
         
         # Verifique se o executável da Steam está em todos os discos
         for drive in drive_letters:
-            steam_path = os.path.join(drive, "Steam", steam_executable)
-            if os.path.isfile(steam_path):
-                return os.path.dirname(steam_path)
-        
+            common_paths = [
+                os.path.join(os.environ.get("ProgramFiles", ""), "Steam", steam_executable).replace('C:\\', f"{drive}\\"),
+                os.path.join(os.environ.get("ProgramFiles(x86)", ""), "Steam", steam_executable).replace('C:\\', f"{drive}\\"),
+            ]
+            for path in common_paths:
+                if os.path.isfile(path):
+                    return path
         return None
     
     @staticmethod
