@@ -5,28 +5,12 @@ from PyQt6.QtWidgets import (
     QListWidget, QHBoxLayout, QFileDialog, QMessageBox, QProgressBar, QSizePolicy
 )
 from PyQt6.QtGui import QPixmap, QImage, QImageReader, QColor, QBrush, QCursor, QIcon
-from PyQt6.QtCore import Qt, QSize, QThread
+from PyQt6.QtCore import Qt
 
 from src.mod import Mod
 from src.tools import (Converter, Resources)
 from src.modpack import Modpack
 from PyQt6.QtCore import pyqtSignal
-
-class WorkerUpload(QThread):
-    def __init__(self, modpack:Modpack):
-        super().__init__()
-        self.modpack = modpack
-
-    def run(self):
-        self.modpack.sync()
-        
-class WorkerDownload(QThread):
-    def __init__(self, modpack:Modpack):
-        super().__init__()
-        self.modpack = modpack
-
-    def run(self):
-        self.modpack.update_modpack()
 
 class ModpackConfigWindow(QDialog):
     
@@ -94,25 +78,6 @@ class ModpackConfigWindow(QDialog):
         self.progress_bar.setVisible(False)
         modpack_edit_layout.addWidget(self.progress_bar)
         
-        self.send_button = QPushButton(i18n.t(f'mp.btn.upload'))
-        self.define_button_icon(self.send_button, 'UploadToCloud.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
-        self.send_button.clicked.connect(self.upload_modpack)
-        
-        hbox_layout_mods_upload_download = QHBoxLayout()
-        hbox_layout_mods_upload_download.addStretch()
-        if self.modpack.is_owner:
-            self.button_size_rule(self.send_button)
-            hbox_layout_mods_upload_download.addWidget(self.send_button)
-        
-        self.download_button = QPushButton(i18n.t(f'mp.btn.download'))
-        self.button_size_rule(self.download_button)
-        self.download_button.clicked.connect(self.download_modpack)
-        self.define_button_icon(self.download_button, 'DownloadFromCloud.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
-        hbox_layout_mods_upload_download.addWidget(self.download_button)
-        hbox_layout_mods_upload_download.addStretch()
-        modpack_edit_layout.addLayout(hbox_layout_mods_upload_download)
-        
-        
         hbox_layout_mods = QHBoxLayout()
         hbox_layout_mods.addStretch()
         install_mod_button = QPushButton(i18n.t(f'mp.btn.mod.install'))
@@ -130,7 +95,6 @@ class ModpackConfigWindow(QDialog):
         hbox_layout_mods.addStretch()
         
         modpack_edit_layout.addLayout(hbox_layout_mods)
-        
         
         # Habilitar todos os mods
         hbox_layout_mods_all = QHBoxLayout()
@@ -163,36 +127,6 @@ class ModpackConfigWindow(QDialog):
         self.modpack.save()
         self.updateSignal.emit({})
     
-    def update_progress(self, args:dict):
-        if args['step'] == 0:
-            self.send_button.setText(i18n.t('mp.btn.event.mapping'))
-            self.send_button.setDisabled(True)
-        elif args['step'] == 1:
-            self.send_button.setText(i18n.t('mp.btn.event.uploading'))
-        self.progress_bar.setValue(int(round(args['progress'])))
-        pass
-        if args['done']:
-            self.send_button.setDisabled(False)
-            self.progress_bar.setVisible(False)
-            self.send_button.setText(i18n.t(f'mp.btn.upload'))
-    
-    def download_progress(self, args:dict):
-        if args['step'] == 0:
-            self.download_button.setText(i18n.t('mp.btn.event.mapping'))
-            self.download_button.setDisabled(True)
-        elif args['step'] == 1:
-            self.download_button.setText(i18n.t('mp.btn.event.downloading'))
-        self.progress_bar.setValue(int(round(args['progress'])))
-        pass
-        if args['done']:
-            self.download_button.setDisabled(False)
-            self.progress_bar.setVisible(False)
-            self.download_button.setText(i18n.t(f'mp.btn.download'))
-            self.update_mods_list()
-            self.modpack.reload()
-            self.show_info()
-            self.save()
-    
     def show_info(self):
         self.name_edit.setText(self.modpack.name)
         pixmap = None
@@ -208,19 +142,6 @@ class ModpackConfigWindow(QDialog):
             desired_height = 200
             pixmap_resized = pixmap.scaled(desired_width, desired_height, Qt.AspectRatioMode.KeepAspectRatio)
             self.image_preview.setPixmap(pixmap_resized)
-        pass
-    
-    def upload_modpack(self):
-        self.modpack.uploadSignal.connect(self.update_progress)
-        self.worker = WorkerUpload(self.modpack)
-        self.worker.start()
-        self.progress_bar.setVisible(True)
-    
-    def download_modpack(self):
-        self.modpack.uploadSignal.connect(self.download_progress)
-        self.worker = WorkerDownload(self.modpack)
-        self.worker.start()
-        self.progress_bar.setVisible(True)
         pass
     
     def item_double_clicked(self, item):

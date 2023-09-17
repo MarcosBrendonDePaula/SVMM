@@ -230,25 +230,6 @@ class MenuView(QWidget):
         dialog.setLayout(layout)
         dialog.exec()
         
-    def create_remote_modpack(self):
-        dialog = QDialog(self)
-        dialog.setWindowTitle(i18n.t("remote.window.title"))
-        
-        layout = QVBoxLayout()
-        
-        label = QLabel(i18n.t("remote.label.modpack_uuid"))
-        layout.addWidget(label)
-        
-        name_input = QLineEdit()
-        layout.addWidget(name_input)
-        
-        confirm_button = QPushButton(i18n.t("remote.btn.connect"))
-        confirm_button.clicked.connect(lambda: self.confirm_create_remote_modpack(name_input.text(), dialog))
-        layout.addWidget(confirm_button)
-
-        dialog.setLayout(layout)
-        dialog.exec()
-    
     def confirm_create_modpack(self, modpack_name, dialog):
         if modpack_name:
             modpack = Modpack(modpack_name)
@@ -256,26 +237,6 @@ class MenuView(QWidget):
             # Atualizar a lista de modpacks
             self.ListAllModpacks()
             dialog.close()
-            
-    def confirm_create_remote_modpack(self, uuid, dialog):
-        if uuid:
-            from src.tools import ModpackApi
-            conf = Config()
-            server_host = f"{conf.get('SYNCAPI','protocol')}://{conf.get('SYNCAPI','host')}"
-            api = ModpackApi(server_host)
-            resp = api.get_modpack_info(uuid)
-            if resp['status'] == 200:
-                modpack = Modpack(resp['json']['name'], _uuid=resp['json']['uuid'])
-                # Create the path for modpack.json in the modpack folder
-                modpack_json_path = Path(modpack.folder_path) / "modpack.json"
-                # Write the JSON content to modpack.json
-                with modpack_json_path.open('w') as json_file:
-                    json.dump(resp['json'], json_file, indent=4)
-                    dialog.close()
-                self.listAllModpacksAndDownload(modpack)
-            else:
-                QMessageBox.warning(self, str(resp['status']), i18n.t('remote.error.uuid'))
-                pass
     
     def listAllModpacksAndDownload(self,Modpack:Modpack):
         self.edit_modpack(Modpack, True)
@@ -312,12 +273,6 @@ class MenuView(QWidget):
         self.define_button_icon(create_button, 'Add File.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
         layout.addWidget(create_button, 0, 0, 1, 1)
         
-        # Adicionar botão de criar modpack
-        connect_button = QPushButton(i18n.t(f'btn.connect'))
-        self.define_button_icon(connect_button, 'Add Link.png', (int(45 * self.ICON_SCALE), int(45 * self.ICON_SCALE)), False)
-        connect_button.clicked.connect(self.create_remote_modpack)
-        layout.addWidget(connect_button, 0, 1, 1, 1)
-        
         # Adicione os botões
         self.play_button = QPushButton(i18n.t(f'btn.play'))
         self.edit_button = QPushButton(i18n.t(f'btn.edit'))
@@ -352,14 +307,6 @@ class MenuView(QWidget):
         
         self.version_label = QLabel(Infos.version)
         layout.addWidget(self.version_label, 6, 3, 1, 1, alignment=Qt.AlignmentFlag.AlignRight)
-        
-        #----------------------------------------------------------
-        self.share_button = QPushButton()
-        self.setToolTip(i18n.t(f'btn.share'))
-        self.define_button_icon(self.share_button, 'Share.png', ((int(60 * self.ICON_SCALE), int(55 * self.ICON_SCALE))), True)
-        self.share_button.clicked.connect(self.share_button_clicked)
-        layout.addWidget(self.share_button,0,3,1,1)
-        self.share_button.setToolTip(i18n.t('btn.share.tooltipe'))
         
         # Configure o layout de informações na posição desejada
         layout.addLayout(self.info_layout, 1, 2, 5, 2)

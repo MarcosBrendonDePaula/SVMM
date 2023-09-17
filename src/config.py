@@ -68,9 +68,6 @@ class Config:
     def set_default_game(self):
         self.ensure_config_field('GAME', 'path', self.find_stardew_valley_installation_path())
         self.ensure_config_field('GAME', 'modsfolder', 'Mods')
-        self.ensure_config_field('SYNCAPI', 'host', 'svmgapi.marcosbrendon.com:3000')
-        self.ensure_config_field('SYNCAPI', 'protocol', 'http')
-        self.ensure_config_field('SYNCAPI', 'max_connections', '20')
     
     def set_default_steam(self):
         STEAM_PATH = Steam.get_installation_path()

@@ -65,19 +65,6 @@ class Config(QDialog):
         self.layout_basico.addWidget(self.label_log_level, 3, 0)
         self.layout_basico.addWidget(self.log_level_select, 3, 1, 1, 2)
 
-        # Rótulo e campo de entrada para SYNCAPI
-        self.label_sync_api = QLabel(i18n.t(f'Config.label.sync_api'))
-        self.sync_api_input = QLineEdit()
-        self.layout_basico.addWidget(self.label_sync_api, 4, 0)
-        self.layout_basico.addWidget(self.sync_api_input, 4, 1, 1, 2)
-
-        self.max_con_label = QLabel(i18n.t(f'Config.label.sync_api.max_con'))
-        self.sync_api_max_con = QLineEdit()
-        self.sync_api_max_con.setValidator(QIntValidator())
-        self.sync_api_max_con.textEdited.connect(self.max_connections_validate)
-        self.layout_basico.addWidget(self.max_con_label, 5, 0)
-        self.layout_basico.addWidget(self.sync_api_max_con, 5, 1, 1, 2)
-
         # Rótulo e campo de seleção para LogLevel
         self.label_use_steam = QLabel(i18n.t(f'Config.label.use_steam'))
         self.use_steam = QComboBox()
@@ -121,17 +108,6 @@ class Config(QDialog):
         self.browse_steam_button.clicked.connect(self.browse_steam_directory)
         self.contributors.clicked.connect(self.show_contributors)
     
-    def max_connections_validate(self, text):
-        try:
-            int_value = int(text)
-            if int_value > Infos.limit_connections:
-                self.sync_api_max_con.setText(f"{Infos.limit_connections}")
-            elif int_value < 1:
-                self.sync_api_max_con.setText("1")
-            self.save_button.setDisabled(False)
-        except ValueError:
-            self.save_button.setDisabled(True)
-    
     def show_contributors(self):
         ContributorsDialog().exec()
         pass
@@ -151,8 +127,6 @@ class Config(QDialog):
         self.game_path_input.setText(self.config.get('GAME', 'path'))
         # self.mods_path_input.setText(self.config.get('GAME', 'modsfolder'))
         self.log_level_select.setCurrentText(self.config.get('CONSOLE', 'loglevel'))
-        self.sync_api_input.setText(self.config.get('SYNCAPI', 'host'))
-        self.sync_api_max_con.setText(self.config.get('SYNCAPI', 'max_connections'))
         self.language_select.setCurrentText(self.config.get('SVMG', 'lang'))
         self.use_steam.setCurrentText(self.config.get('STEAM', 'use'))
         self.steam_path_input.setText(self.config.get('STEAM', 'path'))
@@ -163,8 +137,6 @@ class Config(QDialog):
         self.config.set('GAME', 'path', self.game_path_input.text())
         # self.config.set('GAME', 'modsfolder', self.mods_path_input.text())
         self.config.set('CONSOLE', 'loglevel', self.log_level_select.currentText())
-        self.config.set('SYNCAPI', 'host', self.sync_api_input.text())
-        self.config.set('SYNCAPI', 'max_connections', self.sync_api_max_con.text())
         self.config.set('SVMG', 'lang', self.language_select.currentText())
         self.config.set('STEAM', 'use', self.use_steam.currentText())
         self.config.set('STEAM', 'path', self.steam_path_input.text())

@@ -6,7 +6,7 @@ from pathlib import Path
 from src.mod import Mod
 from src.config import Config
 from src.infos import Infos
-from src.tools import JasonAutoFix,HashMap,ModpackApi,Extractor
+from src.tools import JasonAutoFix,Extractor
 import logging
 
 from tqdm import tqdm
@@ -15,8 +15,6 @@ import math
 from PyQt6.QtCore import QObject, pyqtSignal
 
 class Modpack(QObject):
-    uploadSignal = pyqtSignal(dict)
-    downloadSignal = pyqtSignal(dict)
     """Classe para representar e gerenciar modpacks do jogo."""
     
     def __init__(self, name, image="", _uuid="", token="", version="0.0.0", base_directory=""):
@@ -61,10 +59,6 @@ class Modpack(QObject):
             self.save()
         if f_save:
             self.save()
-        conf = Config()
-        server_host = f"{conf.get('SYNCAPI','protocol')}://{conf.get('SYNCAPI','host')}"
-        self.api = ModpackApi(server_host)
-        self.is_owner = self.api.is_owner(self._uuid,self.token)
         
     def to_dict(self):
         """Converte a modpack em um dicionário."""
@@ -268,7 +262,6 @@ class Modpack(QObject):
         except Exception as e:
             self.logger.error(f"Error while removing temporary folder '{temp_dir}': {e}")
 
-
     def _fix_folder_names(self, source_folder):
 
         """
@@ -340,249 +333,7 @@ class Modpack(QObject):
             
         return True
 
-    def sync(self):
-        """Mateus documentar**
-        """
-        info = self.api.get_modpack_info(self._uuid)
-        # se a modpack não existir crie ela no servidor
-        if info['status'] == 404:
-            self.api.create_modpack_directory(self._uuid, self.token)
-            with open(Path(self.folder_path) / "modpack.json", 'rb') as file:
-                self.api.upload_file(self._uuid, self.token, "modpack.json", file)
-            self.send_all_files()
-        else:
-            self.send_all_files()
-    
-    def send_all_files(self):
-        """Mateus documentar**
-        """
         
-        self.uploadSignal.emit({
-            "runing": 1,
-            "progress": 0,
-            "step" : 0,
-            "done" : False
-        })
-        
-        HashMap(self.folder_path)
-        info = self.api.get_modpack_info(self._uuid)
-        folder = Path(self.folder_path)
-        
-        def _upload_file(mod_file:Path):
-            if mod_file.is_file():
-                with open(mod_file, 'rb') as file:
-                    relative_path = mod_file.relative_to(self.folder_path)
-                    return self.api.upload_file(self._uuid, self.token, str(relative_path).replace('\\', '/'), file)
-            return None
-        
-        def _delete_remote_file(mod_file:Path):
-            relative_path = str(mod_file.relative_to(self.folder_path)).replace('\\', '/')
-            self.api.remove_modpack_file(self._uuid, relative_path)
-
-        hashmap_remoto = self.api.get_modpack_hash_map(self._uuid)['json']
-        upload_files = set()  # Conjunto para armazenar os arquivos que precisam ser carregados
-        delete_files = set()  # Conjunto para armazenar os arquivos que precisam ser deletados
-
-        # Iterar pelos arquivos para determinar quais precisam ser carregados ou deletados
-        mod_file:Path
-        for mod_file in folder.glob('**/*'):
-            if mod_file.is_file():
-                local_hash = HashMap.hash_file(mod_file)
-                remote_hash = hashmap_remoto.get(str(mod_file.relative_to(folder)).replace('\\', '/'))
-                if remote_hash is None:
-                    upload_files.add(mod_file)
-                elif remote_hash != local_hash:
-                    upload_files.add(mod_file)
-        
-        # Iterar pelo hashmap remoto para verificar arquivos que precisam ser removidos remotamente
-        for key in hashmap_remoto:
-            file_path = key.replace('/', os.path.sep)
-            local_file_path = Path(self.folder_path) / file_path
-            if local_file_path.exists() == False:
-                delete_files.add(local_file_path)
-        
-        max_connections = 20
-        total_files = len(upload_files)
-        total_exclusions = len(delete_files)
-        processed = 0
-        all_tasks = total_files + total_exclusions
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_connections) as executor:
-            # Criação de futures para as remoções
-            delete_futures = [executor.submit(_delete_remote_file, mod_file) for mod_file in delete_files]
-
-            self.uploadSignal.emit({
-                "runing": 1,
-                "progress": 0,
-                "step" : 1,
-                "done" : False
-            })
-            
-            # Cria uma barra de progresso para as remoções
-            with tqdm(total=total_exclusions, desc="Deleting files") as delete_pbar:
-                for future in concurrent.futures.as_completed(delete_futures):
-                    res = future.result()
-                    if res is not None:
-                        # Handle the result if needed
-                        pass
-                    delete_pbar.update(1)  # Atualiza a barra de progresso a cada arquivo concluído
-                    processed += 1
-                    progress_percent = (processed / all_tasks) * 100
-                    self.uploadSignal.emit({
-                        "runing": 1,
-                        "progress": math.floor(progress_percent),
-                        "step": 1,
-                        "done": False
-                    })
-
-            # Criação de futures para os envios
-            upload_futures = [executor.submit(_upload_file, mod_file) for mod_file in upload_files]
-            
-            self.uploadSignal.emit({
-                "runing": 1,
-                "progress": 0,
-                "step" : 2,
-                "done" : False
-            })
-            
-            # Cria uma barra de progresso para os envios
-            with tqdm(total=total_files, desc="Uploading files") as upload_pbar:
-                for future in concurrent.futures.as_completed(upload_futures):
-                    res = future.result()
-                    if res is not None:
-                        # Handle the result if needed
-                        pass
-                    processed += 1
-                    upload_pbar.update(1)  # Atualiza a barra de progresso a cada arquivo concluído
-                    
-                    progress_percent = (processed / all_tasks) * 100
-                    self.uploadSignal.emit({
-                        "runing": 1,
-                        "progress": math.floor(progress_percent),
-                        "step": 2,
-                        "done": False
-                    })
-        
-        self.uploadSignal.emit({
-            "runing": 0,
-            "progress": 100,
-            "step" : None,
-            "done" : True
-        })
-        
-    def update_modpack(self):
-        res = self.api.get_modpack_hash_map(self._uuid)
-        if res['status'] == 200:
-            thread = threading.Thread(target=self.download_files, args=(res['json'],))
-            thread.start()
-    
-    def download_files(self, hash_json: dict):
-        self.uploadSignal.emit({
-            "runing": 1,
-            "progress": 0,
-            "step" : 0,
-            "done" : False
-        })
-        
-        dictRemoto = hash_json
-        dictLocal = HashMap(self.folder_path, True).hashmap
-        
-        def download_file(file_path):
-            if file_path.lower().endswith("desktop.ini"):
-                self.logger.info(f"Ignoring {file_path}...")
-                return
-
-            res = self.api.download_modpack_file(self._uuid, file_path)
-            if res['status'] == 200:
-                content = res['content']
-                local_file_path = Path(self.folder_path) / file_path.replace("/", os.path.sep)
-                local_file_path.parent.mkdir(parents=True, exist_ok=True)
-
-                with local_file_path.open('wb') as local_file:
-                    local_file.write(content)
-       
-        max_connections = 25
-        try:
-            conf = Config()
-            max_connections = int(conf.get('SYNCAPI', 'max_connections'))
-            if max_connections > Infos.limit_connections:
-                max_connections = Infos.limit_connections
-        except:
-            max_connections = 25
-        
-        download_tasks = []
-        local_hash_map = HashMap(self.folder_path).hashmap
-        
-        self.uploadSignal.emit({
-            "runing": 1,
-            "progress": 0,
-            "step" : 1,
-            "done" : False
-        })
-        
-        for file_path in local_hash_map.keys():
-            if file_path.lower() == "modpack.json":
-                continue
-            full_path = Path(self.folder_path) / file_path
-            if file_path not in dictRemoto or dictRemoto.get(file_path) != HashMap.hash_file(Path(full_path)):
-                Path(full_path).unlink()
-
-
-        for root, dirs, files in os.walk(self.folder_path, topdown=False):
-            for dir_name in dirs:
-                dir_path = os.path.join(root, dir_name)
-                if not os.listdir(dir_path):  # Check if directory is empty
-                    os.rmdir(dir_path)
-        
-        folder = Path(self.folder_path) / "mods_enabled"
-        folder.mkdir(parents=True, exist_ok=True)
-        
-        folder = Path(self.folder_path) / "mods_disabled"
-        folder.mkdir(parents=True, exist_ok=True)
-
-        for file_path in hash_json.keys():
-            if file_path.lower().endswith("desktop.ini"):
-                continue
-            local_file_path = Path(self.folder_path) / file_path.replace("/", os.path.sep)
-            try:
-                localHash = HashMap.hash_file(local_file_path)
-            except:
-                localHash = None
-
-            # Verifique se o arquivo não existe localmente, ou se os hashes são diferentes
-            if localHash is None or localHash != hash_json[file_path]:
-                download_tasks.append(file_path)
-            elif localHash is not None and hash_json.get(file_path) is None:
-                # Se o arquivo existe localmente mas não remotamente, apague-o localmente
-                local_file_path.unlink()
-
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_connections) as executor:
-            futures = [executor.submit(download_file, file_path) for file_path in download_tasks]
-            
-            completed_tasks = 0
-            total_tasks = len(download_tasks)
-            
-            with tqdm(total=len(download_tasks), desc="Downloading files") as pbar:
-                for future in concurrent.futures.as_completed(futures):
-                    future.result()
-
-                    completed_tasks += 1
-                    progress = completed_tasks / total_tasks * 100
-
-                    self.uploadSignal.emit({
-                        "runing": 1,
-                        "progress": math.floor(progress),
-                        "step": 2,
-                        "done": False
-                    })
-                    pbar.update(1)
-                    
-        self.uploadSignal.emit({
-            "runing": 0,
-            "progress": 100,
-            "step" : None,
-            "done" : True
-        })
-    
     def reload(self):
         json_filename = os.path.join(self.folder_path, 'modpack.json')
         if os.path.exists(json_filename):
