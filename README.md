@@ -1,4 +1,4 @@
-# SVMG - Stardew Valley Mod Manager
+# SVMM - Stardew Valley Modpack Manager
 
 ## 🌟 Sobre
 
